@@ -8,7 +8,7 @@ Gem template with RecordingStudio already setup. Use for extending RecordingStud
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace** root recording set up following RecordingStudio's Quick Start pattern
 - **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a working login screen and dashboard
+- **Dummy app** (`test/dummy/`) with a working login screen and FlatPack default sidebar layout for authenticated pages
 
 ## Quick Start
 
@@ -23,6 +23,8 @@ Gem template with RecordingStudio already setup. Use for extending RecordingStud
    bin/dev
    ```
 4. Open port 3000 — you'll see the login screen
+
+The dummy app already includes FlatPack generator output (`flat_pack:install` and default sidebar layout scaffold) so authenticated pages render with the FlatPack sidebar shell by default.
 
 ### Login Credentials
 
@@ -86,7 +88,7 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
 | RecordingStudio | latest  |
-| FlatPack        | latest  |
+| FlatPack        | 0.1.2 (latest, from `bowerbird-app/flatpack`) |
 | Devise          | latest  |
 
 ## Documentation

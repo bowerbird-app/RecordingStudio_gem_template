@@ -1,0 +1,37 @@
+<%= render FlatPack::Sidebar::Component.new(side: sidebar_side) do |sidebar| %>
+  <% sidebar.header do %>
+    <%= render FlatPack::Sidebar::Header::Component.new(
+      brand_abbr: "APP",
+      title: "Your App",
+      subtitle: "Workspace"
+    ) %>
+  <% end %>
+
+  <% sidebar.items do %>
+    <nav class="py-4 space-y-1" aria-label="Main navigation">
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Home",
+        href: "/",
+        icon: :home
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Recording Studio",
+        href: "/recording_studio",
+        icon: :folder
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Gem Template",
+        href: "/gem_template",
+        icon: :cog
+      ) %>
+    </nav>
+  <% end %>
+
+  <% sidebar.footer do %>
+    <%= render FlatPack::Sidebar::Footer::Component.new(class: "text-sm text-[var(--surface-muted-content-color)]") do %>
+      Signed in
+    <% end %>
+  <% end %>
+<% end %>
