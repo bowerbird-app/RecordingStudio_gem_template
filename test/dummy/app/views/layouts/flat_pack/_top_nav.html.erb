@@ -13,25 +13,16 @@
       class: "md:hidden"
     ) %>
 
-    <span class="text-sm font-medium text-[var(--surface-muted-content-color)]">Your App</span>
   <% end %>
 
   <% nav.center do %><% end %>
 
   <% nav.right do %>
-    <div class="ml-auto flex items-center gap-2">
-      <%= render FlatPack::Button::Component.new(
-        text: "New",
-        style: :primary,
+    <% if user_signed_in? %>
+      <%= render FlatPack::Avatar::Component.new(
+        name: current_user.try(:name).presence || current_user.email,
         size: :sm
       ) %>
-      <%= render FlatPack::Button::Component.new(
-        icon: "bell",
-        icon_only: true,
-        style: :ghost,
-        size: :sm,
-        aria: {label: "Notifications"}
-      ) %>
-    </div>
+    <% end %>
   <% end %>
 <% end %>

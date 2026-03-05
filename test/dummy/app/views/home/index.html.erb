@@ -1,40 +1,7 @@
 <div class="container mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold mt-4 mb-6">Dashboard</h1>
-
-  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-    <% card.header do %>
-      <h3>Workspace</h3>
-    <% end %>
-
-    <% card.body do %>
-      <% if @workspace %>
-        <p><strong>Name:</strong> <%= @workspace.name %></p>
-        <% if @root_recording %>
-          <p><strong>Root Recording ID:</strong> <%= @root_recording.id %></p>
-          <%= render FlatPack::Badge::Component.new(text: "Active", style: :success) %>
-        <% end %>
-      <% else %>
-        <%= render FlatPack::Alert::Component.new(
-          text: "No workspace found. Run `bin/rails db:seed` to create one.",
-          style: :warning
-        ) %>
-      <% end %>
-    <% end %>
-  <% end %>
-
-  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-    <% card.header do %>
-      <h3>Current User</h3>
-    <% end %>
-
-    <% card.body do %>
-      <p><strong>Email:</strong> <%= current_user.email %></p>
-    <% end %>
-
-    <% card.footer do %>
-      <%= button_to "Sign Out", destroy_user_session_path,
-        method: :delete,
-        class: "inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-colors duration-[var(--transition-base)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 px-4 py-2 text-sm bg-[var(--color-ghost)] hover:bg-[var(--color-ghost-hover)] text-[var(--color-ghost-text)]" %>
-    <% end %>
-  <% end %>
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Recording Studio Gem Template",
+    subtitle: "Use this template to build addons for Recording Studio",
+    variant: :h1
+  ) %>
 </div>

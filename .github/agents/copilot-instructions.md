@@ -61,6 +61,8 @@ Use `rails_architect.agent.md` as the default implementation specialist when the
 - Do not weaken security controls for convenience.
 - Preserve behavior unless the user explicitly asks for a change.
 - Prefer existing project patterns and approved components.
+- FlatPack-first UI rule: use FlatPack components whenever an equivalent component exists; do not introduce custom HTML wrappers, controls, or layout markup when FlatPack can handle the same job.
+- Permission gate for custom UI code: before adding any custom HTML or JavaScript, ask for explicit user permission in the current conversation and wait for approval.
 - Escalate ambiguous requirements with concise clarifying questions.
 
 
