@@ -51,10 +51,13 @@ This template follows RecordingStudio's root recording pattern:
 To add new recordable types:
 
 1. Create your model (e.g., `Page`, `Comment`)
-2. Register it in `config/initializers/recording_studio.rb`:
+2. Register it in `config/initializers/recording_studio.rb` (the template defaults all supported feature flags to off):
    ```ruby
    RecordingStudio.configure do |config|
      config.recordable_types = ["Workspace", "YourNewType"]
+     config.features.move = false
+     config.features.copyable = false
+     config.features.device_sessions = false
    end
    ```
 3. Create recordings under the root:
@@ -63,6 +66,24 @@ To add new recordable types:
      record.title = "Example"
    end
    ```
+
+### Feature Flags
+
+This template sets all current RecordingStudio feature flags to `false` by default.
+
+- `move` (sometimes referred to as "moveable")
+- `copyable`
+- `device_sessions`
+
+Enable each flag intentionally in `config/initializers/recording_studio.rb`:
+
+```ruby
+RecordingStudio.configure do |config|
+  config.features.move = true
+  config.features.copyable = true
+  config.features.device_sessions = true
+end
+```
 
 ### FlatPack UI Components
 
