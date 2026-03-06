@@ -57,12 +57,47 @@ To add new recordable types:
      config.recordable_types = ["Workspace", "YourNewType"]
    end
    ```
-3. Create recordings under the root:
+3. Leave optional behavior off by default, then opt into capabilities on the specific recordable models that need them:
+   ```ruby
+   class YourNewType < ApplicationRecord
+     include RecordingStudio::Capabilities::Movable.to("Workspace")
+     include RecordingStudio::Capabilities::Copyable.to("Workspace")
+   end
+   ```
+4. If you want per-device root persistence, wire it explicitly in your controller layer:
+   ```ruby
+   class ApplicationController < ActionController::Base
+     include RecordingStudio::Concerns::DeviceSessionConcern
+   end
+   ```
+5. Create recordings under the root:
    ```ruby
    root_recording.record(YourNewType) do |record|
      record.title = "Example"
    end
    ```
+
+### Capabilities
+
+This template uses the current RecordingStudio approach: built-in capabilities are off by default and are enabled per recordable type by including the relevant module on the model.
+
+- `movable`
+- `copyable`
+
+Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
+
+Enable behavior intentionally where it belongs:
+
+```ruby
+class RecordingStudioPage < ApplicationRecord
+  include RecordingStudio::Capabilities::Movable.to("Workspace")
+  include RecordingStudio::Capabilities::Copyable.to("Workspace")
+end
+
+class ApplicationController < ActionController::Base
+  include RecordingStudio::Concerns::DeviceSessionConcern
+end
+```
 
 ### FlatPack UI Components
 

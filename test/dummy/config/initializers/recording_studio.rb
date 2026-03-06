@@ -18,4 +18,7 @@ RecordingStudio.configure do |config|
 
   # Recordable duplication strategy for revisions
   config.recordable_dup_strategy = :dup
+
+  # Built-in capabilities remain disabled until you opt a recordable type into
+  # them by including the relevant RecordingStudio capability module.
 end
