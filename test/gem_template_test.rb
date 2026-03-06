@@ -20,12 +20,11 @@ class GemTemplateTest < Minitest::Test
     assert_includes controller_source, "flat_pack_sidebar"
   end
 
-  def test_recording_studio_feature_flags_disabled_by_default
+  def test_recording_studio_capabilities_are_off_by_default
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
 
-    assert_includes initializer_source, "config.features.move = false"
-    assert_includes initializer_source, "config.features.copyable = false"
-    assert_includes initializer_source, "config.features.device_sessions = false"
+    assert_includes initializer_source, "Built-in capabilities remain disabled"
+    refute_includes initializer_source, "config.features."
   end
 end

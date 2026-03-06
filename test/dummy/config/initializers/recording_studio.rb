@@ -19,8 +19,6 @@ RecordingStudio.configure do |config|
   # Recordable duplication strategy for revisions
   config.recordable_dup_strategy = :dup
 
-  # Feature flags (explicitly disabled by default in this template)
-  config.features.move = false
-  config.features.copyable = false
-  config.features.device_sessions = false
+  # Built-in capabilities remain disabled until you opt a recordable type into
+  # them by including the relevant RecordingStudio capability module.
 end
