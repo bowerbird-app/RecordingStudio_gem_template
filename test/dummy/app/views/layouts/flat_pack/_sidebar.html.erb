@@ -8,14 +8,12 @@
   <% end %>
 
   <% sidebar.items do %>
-    <nav class="py-4 space-y-1" aria-label="Main navigation">
-      <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Home",
-        href: "/",
-        icon: :home
-      ) %>
-
-    </nav>
+    <%= render FlatPack::Sidebar::Item::Component.new(
+      label: "Home",
+      href: root_path,
+      icon: :home,
+      active: current_page?(root_path)
+    ) %>
   <% end %>
 
   <% sidebar.footer do %>
