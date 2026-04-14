@@ -1,6 +1,7 @@
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio.git
-  revision: b74bf251425c2564b2cb98b3ba137fa4570a9ae9
+  revision: c1aec2222f685037debcbce56422fdff0b6cb4f7
+  tag: v0.1.0-alpha
   specs:
     recording_studio (0.1.0)
       rails (>= 8.1.0)
@@ -19,7 +20,7 @@ PATH
   remote: ../..
   specs:
     gem_template (0.1.0)
-      rails (>= 7.0.0)
+      rails (~> 8.1.0)
 
 GEM
   remote: https://rubygems.org/

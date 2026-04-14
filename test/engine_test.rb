@@ -95,19 +95,57 @@ class EngineTest < Minitest::Test
   end
 
   def test_apply_extension_initializers_register_active_support_on_load_callbacks
-    events = []
-    on_load_stub = proc do |event, &block|
-      events << event
-      block&.call
+    to_prepare_blocks = []
+    config_stub = Object.new
+    config_stub.define_singleton_method(:to_prepare) do |&block|
+      to_prepare_blocks << block
     end
 
-    ActiveSupport.stub(:on_load, on_load_stub) do
+    GemTemplate::Engine.stub(:config, config_stub) do
       find_initializer("gem_template.apply_model_extensions").block.call
       find_initializer("gem_template.apply_controller_extensions").block.call
     end
 
-    assert_includes events, :active_record
-    assert_includes events, :action_controller
+    assert_equal 2, to_prepare_blocks.size
+  end
+
+  def test_apply_model_extensions_adds_registered_methods_once
+    model_class = Class.new do
+      def self.name
+        "ExampleRecord"
+      end
+    end
+
+    GemTemplate.configuration.hooks.extend_model(:ExampleRecord) do
+      def template_extension_method
+        :applied
+      end
+    end
+
+    GemTemplate::Engine.apply_model_extensions(model_class)
+    GemTemplate::Engine.apply_model_extensions(model_class)
+
+    instance = model_class.new
+    assert_equal :applied, instance.template_extension_method
+  end
+
+  def test_apply_controller_extensions_matches_demodulized_name
+    controller_class = Class.new do
+      def self.name
+        "Admin::DashboardController"
+      end
+    end
+
+    GemTemplate.configuration.hooks.extend_controller(:DashboardController) do
+      def template_controller_extension
+        :applied
+      end
+    end
+
+    GemTemplate::Engine.apply_controller_extensions(controller_class)
+
+    instance = controller_class.new
+    assert_equal :applied, instance.template_controller_extension
   end
 
   private

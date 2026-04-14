@@ -42,7 +42,7 @@ module GemTemplate
 
         migration_files.each do |source_path|
           filename = File.basename(source_path)
-          # Extract migration name without timestamp (e.g., "create_gem_template_examples.rb")
+          # Extract migration name without timestamp (e.g., "create_gem_template_pages.rb")
           migration_name = filename.sub(/^\d+_/, "")
 
           if options[:skip_existing] && migration_exists?(migration_name)
