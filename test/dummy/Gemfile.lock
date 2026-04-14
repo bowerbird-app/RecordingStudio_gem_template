@@ -20,7 +20,7 @@ PATH
   remote: ../..
   specs:
     gem_template (0.1.0)
-      rails (>= 7.0.0)
+      rails (~> 8.1.0)
 
 GEM
   remote: https://rubygems.org/

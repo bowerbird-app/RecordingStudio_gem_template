@@ -67,7 +67,7 @@ When developing the engine, add migrations to `db/migrate/`:
 
 ```bash
 # From the gem root
-touch db/migrate/$(date +%Y%m%d%H%M%S)_create_gem_template_widgets.rb
+touch db/migrate/$(date +%Y%m%d%H%M%S)_create_gem_template_pages.rb
 ```
 
 ### Migration Conventions
@@ -75,12 +75,17 @@ touch db/migrate/$(date +%Y%m%d%H%M%S)_create_gem_template_widgets.rb
 1. **Use UUID primary keys** for PostgreSQL compatibility:
 
    ```ruby
-   class CreateGemTemplateWidgets < ActiveRecord::Migration[7.1]
+    class CreateGemTemplatePages < ActiveRecord::Migration[8.1]
      def change
-       create_table :gem_template_widgets, id: :uuid do |t|
-         t.string :name, null: false
+          create_table :gem_template_pages, id: :uuid do |t|
+             t.uuid :workspace_id, null: false
+             t.string :title, null: false
+             t.string :slug, null: false
+             t.jsonb :content, default: {}, null: false
          t.timestamps
        end
+
+          add_index :gem_template_pages, [:workspace_id, :slug], unique: true
      end
    end
    ```
@@ -88,8 +93,8 @@ touch db/migrate/$(date +%Y%m%d%H%M%S)_create_gem_template_widgets.rb
 2. **Prefix table names** with the gem name to avoid conflicts:
 
    ```ruby
-   # Good: gem_template_widgets
-   # Bad: widgets
+   # Good: gem_template_pages
+   # Bad: pages
    ```
 
 3. **Use `jsonb` for flexible data** (PostgreSQL):
@@ -101,8 +106,8 @@ touch db/migrate/$(date +%Y%m%d%H%M%S)_create_gem_template_widgets.rb
 4. **Add indexes** for frequently queried columns:
 
    ```ruby
-   add_index :gem_template_widgets, :name
-   add_index :gem_template_widgets, :created_at
+   add_index :gem_template_pages, :workspace_id
+   add_index :gem_template_pages, :published
    ```
 
 ---
@@ -112,8 +117,7 @@ touch db/migrate/$(date +%Y%m%d%H%M%S)_create_gem_template_widgets.rb
 ```
 db/
 └── migrate/
-    ├── 20250101000001_create_gem_template_examples.rb
-    └── 20250101000002_create_gem_template_widgets.rb
+   └── 20250101000001_create_gem_template_pages.rb
 ```
 
 Migrations are included in the gem via the gemspec:
@@ -172,8 +176,8 @@ bin/rails db:rollback
 
 When you rename the gem using `bin/rename_gem`, the migration files are automatically updated:
 
-- Class names change (e.g., `CreateGemTemplateExamples` → `CreateMyEngineExamples`)
-- Table names change (e.g., `gem_template_examples` → `my_engine_examples`)
+- Class names change (e.g., `CreateGemTemplatePages` → `CreateMyEnginePages`)
+- Table names change (e.g., `gem_template_pages` → `my_engine_pages`)
 
 ---
 

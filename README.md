@@ -1,6 +1,6 @@
 # GemTemplate
 
-Gem template with RecordingStudio already setup. Use for extending RecordingStudio.
+Internal template for building Rails engine addons on top of RecordingStudio.
 
 ## What's Included
 
@@ -122,10 +122,10 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
-| RecordingStudio | latest  |
-| FlatPack        | 0.1.2 (latest, from `bowerbird-app/flatpack`) |
+| RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
+| FlatPack        | GitHub source (`bowerbird-app/flatpack`) |
 | Devise          | latest  |
 
 ## Documentation
 
-The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material.
+The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.

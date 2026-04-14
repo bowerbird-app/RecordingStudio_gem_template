@@ -125,7 +125,7 @@ module GemTemplate
     # @param model_name [Symbol, String] The model name
     # @return [Array<Proc>] Array of extension blocks
     def model_extensions_for(model_name)
-      @model_extensions[model_name.to_sym]
+      extensions_for(@model_extensions, model_name)
     end
 
     # Get controller extensions for a given controller
@@ -133,7 +133,7 @@ module GemTemplate
     # @param controller_name [Symbol, String] The controller name
     # @return [Array<Proc>] Array of extension blocks
     def controller_extensions_for(controller_name)
-      @controller_extensions[controller_name.to_sym]
+      extensions_for(@controller_extensions, controller_name)
     end
 
     # Run all hooks for a given event
@@ -211,9 +211,13 @@ module GemTemplate
         @registry[event_name] << {
           handler: callable,
           priority: priority,
-          registered_at: Time.now
+          registered_at: Time.current
         }
       end
+    end
+
+    def extensions_for(store, names)
+      Array(names).flat_map { |name| store[name.to_sym] }
     end
 
     def execute_hook(handler, *)
