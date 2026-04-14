@@ -211,7 +211,7 @@ module GemTemplate
         @registry[event_name] << {
           handler: callable,
           priority: priority,
-          registered_at: Time.current
+          registered_at: Time.respond_to?(:current) ? Time.current : Time.now
         }
       end
     end

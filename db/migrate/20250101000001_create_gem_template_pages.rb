@@ -18,6 +18,12 @@ class CreateGemTemplatePages < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
+    add_page_indexes
+  end
+
+  private
+
+  def add_page_indexes
     add_index :gem_template_pages, :workspace_id
     add_index :gem_template_pages, %i[workspace_id slug], unique: true
     add_index :gem_template_pages, :published

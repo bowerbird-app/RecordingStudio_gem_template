@@ -14,7 +14,11 @@ class InstallGeneratorTest < Minitest::Test
   end
 
   def build_generator(destination_root, options = {})
-    GemTemplate::Generators::InstallGenerator.new([], options, destination_root: destination_root)
+    GemTemplate::Generators::InstallGenerator.new(
+      [],
+      options,
+      destination_root: destination_root
+    )
   end
 
   def test_mount_engine_uses_configured_mount_path
@@ -25,7 +29,7 @@ class InstallGeneratorTest < Minitest::Test
       generator.mount_engine
     end
 
-    assert_equal ['mount GemTemplate::Engine, at: "/addons/recording"'], routes
+    assert_equal ["mount GemTemplate::Engine, at: \"/addons/recording\""], routes
   end
 
   def test_add_tailwind_source_injects_engine_and_flatpack_sources
@@ -42,10 +46,7 @@ class InstallGeneratorTest < Minitest::Test
       end
 
       css = File.read(css_path)
-      assert_includes css, '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";'
-      assert_includes css, '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";'
-      assert_includes css, '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";'
-      assert_includes css, '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
+      assert_tailwind_sources_present(css)
     end
   end
 
@@ -69,10 +70,31 @@ class InstallGeneratorTest < Minitest::Test
       end
 
       css = File.read(css_path)
-      assert_equal 1, css.scan('@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";').size
-      assert_equal 1, css.scan('@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";').size
-      assert_equal 1, css.scan('@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";').size
-      assert_equal 1, css.scan('@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";').size
+      assert_tailwind_sources_present(css)
+      assert_tailwind_sources_count(css, 1)
     end
+  end
+
+  private
+
+  def assert_tailwind_sources_present(css)
+    tailwind_source_lines.each do |line|
+      assert_includes css, line
+    end
+  end
+
+  def assert_tailwind_sources_count(css, count)
+    tailwind_source_lines.each do |line|
+      assert_equal count, css.scan(line).size
+    end
+  end
+
+  def tailwind_source_lines
+    [
+      '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";',
+      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";',
+      '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
+      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
+    ]
   end
 end
