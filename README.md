@@ -123,7 +123,7 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
 | RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
-| FlatPack        | GitHub source (`bowerbird-app/flatpack`) |
+| FlatPack        | v0.1.33 (pinned in `test/dummy/Gemfile`) |
 | Devise          | latest  |
 
 ## Documentation
