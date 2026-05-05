@@ -1,0 +1,20 @@
+<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Recordings tree",
+    subtitle: "Active dummy-app recordings shown as a nested parent/child outline.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Current structure",
+    subtitle: "This tree is generated from RecordingStudio::Recording records, so it updates as active recordings change.",
+  ) %>
+
+  <% if @recording_tree.any? %>
+    <%= render FlatPack::List::Component.new(class: "text-sm text-[var(--surface-content-color)]") do %>
+      <%= render partial: "recording_tree_node", collection: @recording_tree, as: :node %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-[var(--surface-muted-content-color)]">No active recordings found.</p>
+  <% end %>
+</div>

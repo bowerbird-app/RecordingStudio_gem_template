@@ -1,0 +1,77 @@
+<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Install",
+    subtitle: "Host-app setup for the mounted GemTemplate engine and its sample migrations.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Generator-first setup",
+    subtitle: "Start with the install generator, then copy the engine migrations into the host app.",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :bash,
+    code: <<~CODE
+      # Add the engine to the host app.
+      gem "gem_template", path: "../gem_template"
+
+      # Install gems before running any generators.
+      bundle install
+
+      # Mount the engine and generate config/initializers/gem_template.rb.
+      bin/rails generate gem_template:install
+
+      # Copy the sample engine migrations into the host app, then migrate.
+      bin/rails generate gem_template:migrations
+      bin/rails db:migrate
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "What the install generator changes",
+    subtitle: "These steps come directly from lib/generators/gem_template/install/install_generator.rb.",
+  ) %>
+
+  <%= render FlatPack::List::Component.new do %>
+    <%= render FlatPack::List::Item.new(icon: :check) { "Mounts GemTemplate::Engine at /gem_template by default, or another path when --mount_path is supplied." } %>
+    <%= render FlatPack::List::Item.new(icon: :check) { "Copies config/initializers/gem_template.rb so host apps have an explicit GemTemplate.configure block to edit." } %>
+    <%= render FlatPack::List::Item.new(icon: :check) { "Offers to add config/gem_template.yml for environment-specific settings." } %>
+    <%= render FlatPack::List::Item.new(icon: :check) { "Adds Tailwind @source lines for both GemTemplate views and FlatPack components when the host app already has app/assets/tailwind/application.css." } %>
+    <%= render FlatPack::List::Item.new(icon: :check) { "Prints post-install instructions instead of silently mutating more files." } %>
+  <% end %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Tailwind sources the generator manages",
+    subtitle: "These are the exact scan paths injected when Tailwind is present.",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :css,
+    code: <<~CODE
+      /* Include GemTemplate engine views for Tailwind CSS */
+      @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
+      @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";
+
+      /* Include FlatPack component sources for Tailwind CSS */
+      @source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
+      @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Verify the mounted engine",
+    subtitle: "The dummy app is already wired this way, so the same checks apply to a real host app.",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :bash,
+    code: <<~CODE
+      # Start the host application after install.
+      bin/rails server
+
+      # Visit the mounted engine root to confirm the shipped view renders.
+      http://localhost:3000/gem_template
+    CODE
+  ) %>
+</div>

@@ -1,0 +1,9 @@
+<%= render FlatPack::List::Item.new do %>
+  <span><%= node[:label] %></span>
+
+  <% if node[:children].any? %>
+    <%= render FlatPack::List::Component.new(class: "mt-2 pl-4") do %>
+      <%= render partial: "recording_tree_node", collection: node[:children], as: :node %>
+    <% end %>
+  <% end %>
+<% end %>

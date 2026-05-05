@@ -1,0 +1,154 @@
+<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Methods",
+    subtitle: "Public Ruby entry points that already exist in the template.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Configure the engine",
+    subtitle: "GemTemplate.configure",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      GemTemplate.configure do |config|
+        # Keep credentials outside the repo.
+        config.api_key = ENV["GEM_TEMPLATE_API_KEY"]
+
+        # These template keys are safe to rename when the addon becomes real.
+        config.enable_feature_x = false
+        config.timeout = 5
+      end
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Read merged configuration",
+    subtitle: "GemTemplate.configuration",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      config = GemTemplate.configuration
+
+      # Read the merged values after YAML, config.x, and the initializer run.
+      config.api_key
+      config.timeout
+
+      # Hooks are part of the same configuration object.
+      config.hooks
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Export config for inspection",
+    subtitle: "GemTemplate::Configuration#to_h",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      snapshot = GemTemplate.configuration.to_h
+
+      # The hash includes template settings plus hook registration counts.
+      snapshot[:api_key]
+      snapshot[:timeout]
+      snapshot[:hooks_registered]
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Run code before engine boot",
+    subtitle: "GemTemplate::Hooks#before_initialize(handler = nil, priority: DEFAULT_PRIORITY, &)",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      GemTemplate.configuration.hooks.before_initialize(priority: 50) do |engine|
+        # Lower priority numbers run first.
+        Rails.logger.info("Preparing #{engine.engine_name} before config loads")
+      end
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "React after configuration loads",
+    subtitle: "GemTemplate::Hooks#on_configuration(handler = nil, priority: DEFAULT_PRIORITY, &)",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      GemTemplate.configuration.hooks.on_configuration do |config|
+        # Useful when a host app wants to derive secondary settings once.
+        Rails.logger.info("GemTemplate timeout: #{config.timeout}")
+      end
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Instrument service calls",
+    subtitle: "GemTemplate::Hooks#before_service(handler = nil, priority: DEFAULT_PRIORITY, &)",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      GemTemplate.configuration.hooks.before_service do |service_class, args|
+        # The hook receives the class and the service_args payload.
+        Rails.logger.info("Calling #{service_class.name} with #{args.inspect}")
+      end
+
+      GemTemplate.configuration.hooks.after_service do |service_class, result|
+        # Result objects answer success? and expose error/value.
+        Rails.logger.info("#{service_class.name} success? #{result.success?}")
+      end
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Extend a model from the host app",
+    subtitle: "GemTemplate::Hooks#extend_model(model_name, &block)",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      GemTemplate.configuration.hooks.extend_model(:workspace) do
+        # Extension blocks are class_eval'd onto matching host models.
+        validates :name, presence: true
+
+        def gem_template_ready?
+          # Keep the sample logic obvious while the template is still generic.
+          name.present?
+        end
+      end
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Call a service object",
+    subtitle: "GemTemplate::Services::BaseService.call(*, **, &)",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      result = GemTemplate::Services::ExampleService.call(name: "World")
+
+      result.on_success do |value|
+        # ExampleService returns "Hello, World!" for non-blank names.
+        Rails.logger.info(value)
+      end
+
+      result.on_failure do |error, errors|
+        # BaseService exposes both a primary error and an errors array.
+        Rails.logger.error([error, errors].inspect)
+      end
+    CODE
+  ) %>
+</div>
