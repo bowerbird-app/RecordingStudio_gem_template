@@ -1,44 +1,13 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Gem Views",
-    subtitle: "These are the ERB templates currently shipped by the engine itself.",
+    subtitle: "These are the view templates currently shipped by the gem.",
     variant: :h1
   ) %>
 
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Shipped templates",
-    subtitle: "The list is built from app/views/gem_template inside the engine.",
-  ) %>
-
   <%= render FlatPack::List::Component.new(divider: true) do %>
-    <% @engine_views.each do |view_path| %>
+    <% Array(@engine_views).each do |view_path| %>
       <%= render FlatPack::List::Item.new(icon: :eye) { view_path } %>
     <% end %>
-  <% end %>
-
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Override in the host app",
-    subtitle: "Rails will prefer a host-app template when the relative path matches the engine file.",
-  ) %>
-
-  <%= render FlatPack::CodeBlock::Component.new(
-    language: :bash,
-    code: <<~CODE
-      # Copy the shipped engine home page into the host app.
-      mkdir -p app/views/gem_template/home
-      cp $(bundle show gem_template)/app/views/gem_template/home/index.html.erb \
-        app/views/gem_template/home/index.html.erb
-    CODE
-  ) %>
-
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "What ships today",
-    subtitle: "This template keeps the surface area intentionally small until you rename and expand it.",
-  ) %>
-
-  <%= render FlatPack::List::Component.new do %>
-    <%= render FlatPack::List::Item.new(icon: :check) { "The engine currently ships a single working page at app/views/gem_template/home/index.html.erb." } %>
-    <%= render FlatPack::List::Item.new(icon: :check) { "That page already uses FlatPack components, so copied views inherit the same design language." } %>
-    <%= render FlatPack::List::Item.new(icon: :check) { "The mounted root route stays the quickest way to validate host-app Tailwind scanning and UI wiring." } %>
   <% end %>
 </div>

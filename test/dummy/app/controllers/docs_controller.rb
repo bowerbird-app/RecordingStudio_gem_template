@@ -4,7 +4,14 @@ class DocsController < ApplicationController
   def install
   end
 
-  def config
+  def configuration
+    render :config
+  end
+
+  def recordable_types
+    @recordable_types = Array(RecordingStudio.configuration.recordable_types).filter_map do |recordable_type|
+      normalize_recordable_type(recordable_type)
+    end
   end
 
   def recordings_tree
@@ -28,6 +35,16 @@ class DocsController < ApplicationController
   end
 
   private
+
+  def normalize_recordable_type(recordable_type)
+    type_name = recordable_type.is_a?(Class) ? recordable_type.name : recordable_type.to_s
+    return if type_name.blank?
+
+    {
+      name: type_name,
+      label: type_name.demodulize.underscore.humanize
+    }
+  end
 
   def build_recording_node(recording, recordings_by_parent_id)
     {

@@ -1,120 +1,14 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
-  <% config_options = [
-    {
-      name: "api_key",
-      default: 'ENV.fetch("GEM_TEMPLATE_API_KEY", nil)',
-      notes: "Template placeholder for an external integration credential."
-    },
-    {
-      name: "enable_feature_x",
-      default: "false",
-      notes: "Example feature flag that shows how to expose boolean config."
-    },
-    {
-      name: "timeout",
-      default: "5",
-      notes: "Integer timeout used by the sample service layer."
-    },
-    {
-      name: "hooks",
-      default: "GemTemplate::Hooks.new",
-      notes: "Registry for lifecycle, service, model, and controller hooks."
-    }
-  ] %>
-
   <%= render FlatPack::PageTitle::Component.new(
     title: "Config",
-    subtitle: "The engine merges defaults, optional host config files, and the initializer block.",
+    subtitle: "Replace this placeholder with the configuration settings your generated gem exposes.",
     variant: :h1
   ) %>
 
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Available keys",
-    subtitle: "These values are defined by GemTemplate::Configuration today.",
-  ) %>
-
-  <%= render FlatPack::Table::Component.new(data: config_options) do |table| %>
-    <% table.column(title: "Key") { |row| row[:name] } %>
-    <% table.column(title: "Default") { |row| row[:default] } %>
-    <% table.column(title: "Notes") { |row| row[:notes] } %>
-  <% end %>
-
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Initializer block",
-    subtitle: "config/initializers/gem_template.rb is the clearest place to make host-app decisions.",
-  ) %>
-
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
-    code: <<~CODE
-      GemTemplate.configure do |config|
-        # Keep secrets out of git; ENV or credentials are the intended sources.
-        config.api_key = ENV["GEM_TEMPLATE_API_KEY"]
-
-        # The remaining keys are template examples until the gem is renamed.
-        config.enable_feature_x = false
-        config.timeout = 5
-      end
+    code: <<~'CODE'
+      # Add the config settings for the gem here.
     CODE
   ) %>
-
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Optional host overrides",
-    subtitle: "GemTemplate::Engine loads YAML first, then config.x.gem_template, then the initializer.",
-  ) %>
-
-  <%= render FlatPack::CodeBlock::Component.new(
-    snippets: [
-      {
-        label: "YAML",
-        language: :yaml,
-        code: <<~YAML
-          development:
-            # YAML is optional and merges through app.config_for(:gem_template).
-            enable_feature_x: true
-            timeout: 10
-        YAML
-      },
-      {
-        label: "config.x",
-        language: :ruby,
-        code: <<~RUBY
-          # config/environments/production.rb
-          config.x.gem_template.api_key = ENV["GEM_TEMPLATE_API_KEY"]
-          config.x.gem_template.timeout = 10
-        RUBY
-      }
-    ]
-  ) %>
-
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Merge order and runtime access",
-    subtitle: "Later sources override earlier ones, and the merged object stays available through GemTemplate.configuration.",
-  ) %>
-
-  <%= render FlatPack::CodeBlock::Component.new(
-    language: :ruby,
-    code: <<~CODE
-      # Merge order inside GemTemplate::Engine:
-      # 1. GemTemplate::Configuration defaults
-      # 2. config/gem_template.yml via config_for
-      # 3. config.x.gem_template
-      # 4. GemTemplate.configure do |config| ... end
-
-      # Read the merged object anywhere in the host app or engine.
-      GemTemplate.configuration.timeout
-      GemTemplate.configuration.to_h
-    CODE
-  ) %>
-
-  <%= render FlatPack::SectionTitle::Component.new(
-    title: "Secret handling",
-    subtitle: "The template intentionally points real secrets at ENV or credentials.",
-  ) %>
-
-  <%= render FlatPack::List::Component.new do %>
-    <%= render FlatPack::List::Item.new(icon: :check) { 'Use ENV["GEM_TEMPLATE_API_KEY"] for the shipped api_key example.' } %>
-    <%= render FlatPack::List::Item.new(icon: :check) { "Use Rails.application.credentials when a host app prefers encrypted secrets." } %>
-    <%= render FlatPack::List::Item.new(icon: :check) { "Keep placeholder feature flags in git, but never commit real credentials." } %>
-  <% end %>
 </div>

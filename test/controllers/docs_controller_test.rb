@@ -25,21 +25,53 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     get docs_install_path
     assert_response :success
     assert_select "h1", text: "Install"
-    assert_includes response.body, "gem_template:install"
-    assert_includes response.body, "gem_template:migrations"
+    assert_includes response.body, "Step 1"
+    assert_includes response.body, "Provide one section title for each step"
+    assert_includes response.body, "# Put the step instruction here."
   end
 
   test "config page renders successfully" do
     get docs_config_path
     assert_response :success
     assert_select "h1", text: "Config"
-    assert_includes response.body, "config/gem_template.yml"
-    assert_includes response.body, "config.x.gem_template"
+    expected_placeholder = "Replace this placeholder with the configuration settings your generated gem exposes."
+
+    assert_includes response.body, expected_placeholder
+    assert_includes response.body, "# Add the config settings for the gem here."
+  end
+
+  test "recordable types page renders configured recordables dynamically" do
+    original_recordable_types = RecordingStudio.configuration.recordable_types
+    RecordingStudio.configuration.recordable_types = [Workspace, "RecordingStudio::AccessBoundary"]
+
+    get docs_recordable_types_path
+
+    assert_response :success
+    assert_select "h1", text: "Recordable types"
+    assert_includes response.body, "The list below comes directly from RecordingStudio.configuration.recordable_types."
+    assert_includes response.body, "Workspace"
+    assert_includes response.body, "RecordingStudio::AccessBoundary"
+    assert_includes response.body, "Access boundary"
+  ensure
+    RecordingStudio.configuration.recordable_types = original_recordable_types
+  end
+
+  test "recordable types page includes dummy app defaults" do
+    get docs_recordable_types_path
+
+    assert_response :success
+    assert_includes response.body, "Workspace"
+    assert_includes response.body, "Folder"
+    assert_includes response.body, "Page"
   end
 
   test "recordings tree page renders successfully" do
     workspace = Workspace.create!(name: "Tree Workspace")
     root_recording = RecordingStudio::Recording.create!(recordable: workspace)
+    folder = Folder.create!(name: "Reference")
+    folder_recording = RecordingStudio::Recording.create!(recordable: folder, parent_recording: root_recording)
+    page = Page.create!(title: "API")
+    RecordingStudio::Recording.create!(recordable: page, parent_recording: folder_recording)
     access_boundary = RecordingStudio::AccessBoundary.create!(minimum_role: :edit)
     boundary_recording = RecordingStudio::Recording.create!(
       recordable: access_boundary,
@@ -53,8 +85,13 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Recordings tree"
     assert_includes response.body, "Workspace: Tree Workspace"
+    assert_includes response.body, "Folder: Reference"
+    assert_includes response.body, "Page: API"
     assert_includes response.body, "Access boundary: Edit"
     assert_includes response.body, "Access: Admin for #{@user.email}"
+    assert_select "ul.list-disc", minimum: 2
+    refute_includes response.body, "Current structure"
+    refute_includes response.body, "This tree is generated from RecordingStudio::Recording records"
   end
 
   test "gem_views page renders successfully" do
@@ -68,8 +105,11 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     get docs_methods_path
     assert_response :success
     assert_select "h1", text: "Methods"
-    assert_includes response.body, "GemTemplate::Services::BaseService.call"
-    assert_includes response.body, "before_initialize"
+    assert_includes response.body, "Document the public methods your addon exposes."
+    assert_includes response.body, "Example method"
+    assert_includes response.body, "recordingstudio_addon.example_method"
+    assert_includes response.body, "# Explain what this method does before the example."
+    assert_includes response.body, "Provide one section title and codeblock for each method"
   end
 
   test "sidebar includes documentation links" do
@@ -77,6 +117,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     assert_select %(a[href="#{docs_install_path}"]), text: /Install/
     assert_select %(a[href="#{docs_config_path}"]), text: /Config/
+    assert_select %(a[href="#{docs_recordable_types_path}"]), text: /Recordable types/
     assert_select %(a[href="#{docs_recordings_tree_path}"]), text: /Recordings tree/
     assert_select %(a[href="#{docs_gem_views_path}"]), text: /Gem Views/
     assert_select %(a[href="#{docs_methods_path}"]), text: /Methods/
