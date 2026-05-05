@@ -1,8 +1,10 @@
 Rails.application.routes.draw do
   devise_for :users
+
+  # RecordingStudio engine is data/API-focused and has no browser root route.
+  # Keep legacy links working by redirecting the base path to the app home.
+  get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
-  # Mount the GemTemplate engine
-  mount GemTemplate::Engine, at: "/gem_template"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

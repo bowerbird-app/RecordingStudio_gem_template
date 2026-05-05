@@ -1,24 +1,35 @@
-# README
+# Dummy App
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This Rails app exists to validate the Recording Studio addon template in a real host application.
 
-Things you may want to cover:
+## What It Covers
 
-* Ruby version
+- Devise authentication with a seeded admin user
+- `Current.actor` wiring for Recording Studio events
+- Root workspace and root recording setup
+- FlatPack layout integration and Tailwind source scanning
+- Mounted `RecordingStudio::Engine` route behavior inside a host app
 
-* System dependencies
+## Quick Start
 
-* Configuration
+```bash
+bundle install
+bin/rails db:setup
+bin/dev
+```
 
-* Database creation
+Then open the app and sign in with:
 
-* Database initialization
+- Email: `admin@admin.com`
+- Password: `Password`
 
-* How to run the test suite
+## Useful Routes
 
-* Services (job queues, cache servers, search engines, etc.)
+- `/` - dummy app home page and template guidance
+- `/recording_studio` - mounted Recording Studio engine
+- `/users/sign_in` - Devise sign-in page
+- `/up` - Rails health check
 
-* Deployment instructions
+## Why This App Exists
 
-* ...
+Use this app to verify the generated addon experience before renaming the gem or copying patterns into another host app. If a layout, route, asset source, or Recording Studio initializer change breaks here, the template likely needs adjustment before reuse.

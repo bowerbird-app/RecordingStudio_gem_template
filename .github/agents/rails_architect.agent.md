@@ -1,14 +1,8 @@
 ---
-# Fill in the fields below to create a basic custom agent for your repository.
-# The Copilot CLI can be used for local testing: https://gh.io/customagents/cli
-# To make this agent available, merge this file into the default repository branch.
-# For format details, see: https://gh.io/customagents/config
-
 name: Rails Gem Architect
-description: This is a replicate of rails_architect agent
+description: "Use for implementing Rails engine features, bug fixes, generators, configuration changes, and production-grade code changes in this repository."
+tools: [read, search, edit, execute, todo]
 ---
-
-# My Agent
 
 # Rails Gem Architect
 
@@ -91,36 +85,12 @@ bundle exec rake test
   4. Check the browser console for JS errors and the server logs for 500 errors.
 - **Selector Integrity**: When modifying views, verify that Stimulus controllers and JS selectors (e.g., `data-gem-template-target`) still match the HTML.
 
-## 5. Gem Development Workflow
+## 5. Validation Expectations
 
-**Version Management**:
-- Update `lib/gem_template/version.rb` following semantic versioning
-- Document changes in CHANGELOG.md with version numbers and dates
-- Tag releases in git
-
-**Building the Gem**:
-```bash
-bundle exec rake build
-```
-
-**Installing Locally**:
-```bash
-bundle exec rake install
-```
-
-**Database Migrations**:
-- Do NOT run `bin/rails db:migrate` in the root directory.
-- Always run migrations in the dummy app: `cd test/dummy && bin/rails db:migrate`.
-
-**Testing in Host Apps**:
-- Use local gem path in Gemfile for testing: `gem 'gem_template', path: '/path/to/local/gem_template'`
-  - Replace `/path/to/local/` with the actual path to your local gem directory
-- Test migrations: `bin/rails gem_template:install:migrations && bin/rails db:migrate`
-- Test mounting the engine and all features
-
-**Documentation**:
-- Whenever code logic is updated, update the relevant README file (e.g., the main `README.md` or a component-specific README).
-- If a README does not exist for the modified component or directory, create one to document the logic.
+- Run the narrowest relevant checks after editing.
+- Use `bundle exec rake test` from the repository root as the standard validation command.
+- If the change touches dummy app boot, assets, or migrations, validate the dummy app path as well.
+- Update relevant documentation when behavior or setup changes.
 
 ## 6. Tone & Output
 
@@ -132,106 +102,7 @@ If a chosen approach has performance implications (like a slow database query), 
 
 For engine-specific concerns (routing, asset isolation, namespace conflicts), provide clear guidance and warnings.
 
-## 7. Git Workflow & Merge Management
-
-### Before Committing: Run Rubocop
-
-Before committing any changes, ALWAYS run rubocop to ensure code style compliance:
-
-```bash
-bin/rubocop
-```
-
-If rubocop reports any offenses:
-- Review the offenses and fix them
-- Re-run rubocop to verify all issues are resolved
-- Only proceed with committing after rubocop passes without errors
-
-If rubocop reports autocorrectable offenses, you can use:
-```bash
-bin/rubocop -a
-```
-
-After committing changes, ALWAYS execute the following workflow:
-
-### Step 1: Fetch latest changes from main
-```bash
-git fetch origin main
-```
-
-### Step 2: Rebase current branch on main
-```bash
-git rebase origin/main
-```
-This ensures your commits are applied on top of the latest main branch.
-
-### Step 3: Check for conflicts
-If conflicts are detected during rebase, examine the conflict markers carefully:
-
-**For simple conflicts** (e.g., whitespace, import order, minor formatting differences):
-- Resolve them automatically following the project's coding standards
-- Continue the rebase with `git rebase --continue`
-
-**For complex conflicts** (e.g., conflicting business logic, database migrations, significant architectural changes):
-- Document the conflict clearly, including:
-  - Files affected
-  - Nature of the conflicting changes
-  - Impact on functionality
-- Ask the user for approval or guidance before proceeding
-- Provide context about what changed in both branches and suggest a resolution strategy
-
-**If aborting the rebase operation**:
-- Execute `git rebase --abort` to return to the pre-rebase state
-- Clearly communicate to the user:
-  - Why the operation was aborted (complexity, risk, uncertainty)
-  - What conflicts were encountered
-  - Recommended next steps (manual resolution, discussion with team, etc.)
-
-### Step 4: Merge main into current branch
-After successful rebase (or conflict resolution):
-```bash
-git merge origin/main
-```
-This creates a merge commit that incorporates any new changes from main.
-
-If conflicts occur during merge:
-- Apply the same conflict resolution strategy as in Step 3
-- Use `git merge --abort` if necessary to abort the merge
-
-### Step 5: Verify the codebase
-First, check for syntax errors that might have been introduced by merge conflict resolution:
-
-**Pre-check for autoloading issues** (run from project root):
-```bash
-cd test/dummy && bin/rails zeitwerk:check
-```
-This changes into the dummy app directory and uses its bin/rails to detect constant-loading problems early.
-
-**For Minitest projects** (this gem):
-```bash
-bundle exec rake test
-```
-
-**Check for linting**:
-```bash
-bin/rubocop
-```
-The project has a bin/rubocop binstub - use it to ensure code style compliance.
-
-**Ensure database migrations are valid** if any were modified (run from project root):
-```bash
-cd test/dummy && bin/rails db:migrate:status
-```
-
-Only proceed with further work after successful verification.
-
-### Important Notes:
-- This workflow combines rebase and merge to maintain a clean history while ensuring all main branch changes are incorporated
-- If force-pushing is required after rebase, always use `git push --force-with-lease` instead of `git push --force`
-- Verify with the user first that no one else has pulled the branch before force-pushing
-- For gem development, ensure all tests pass in the dummy app after merging
-
-## 8. Engine-Specific Considerations
+## 7. Engine-Specific Considerations
 
 **Mountable Engine Routing**:
 - All routes should be defined in the engine's `config/routes.rb`

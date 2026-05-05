@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
     if devise_controller?
       "devise"
     else
-      "application"
+      "flat_pack_sidebar"
     end
   end
 end
