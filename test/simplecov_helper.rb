@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
-require "simplecov"
+return if ENV["DISABLE_SIMPLECOV"] == "true"
+
+begin
+  require "simplecov"
+rescue LoadError
+  return
+end
 
 SimpleCov.start do
   enable_coverage :branch

@@ -36,13 +36,85 @@ class GemTemplateTest < Minitest::Test
     assert_includes readme_source, "/recording_studio"
   end
 
-  def test_dummy_home_page_mentions_template_workflow
+  def test_dummy_home_page_uses_demo_title_only
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "Template workflow"
-    assert_includes view_source, "Workspace state"
-    assert_includes view_source, "Recording Studio mount"
+    assert_includes view_source, 'title: "Demo"'
+    assert_includes view_source, 'subtitle: "Provide a simple demo below"'
+    refute_includes view_source, "Template workflow"
+  end
+
+  def test_dummy_docs_pages_use_minimal_flatpack_documentation_components
+    docs_view_paths = Dir[File.expand_path("dummy/app/views/docs/*.html.erb", __dir__)].reject do |view_path|
+      File.basename(view_path).start_with?("_")
+    end
+    refute_empty docs_view_paths
+
+    docs_view_paths.each do |view_path|
+      view_source = File.read(view_path)
+
+      assert_includes view_source, "FlatPack::PageTitle::Component"
+      refute_includes view_source, "FlatPack::Card::Component"
+    end
+
+    methods_view = File.read(File.expand_path("dummy/app/views/docs/methods.html.erb", __dir__))
+    assert_includes methods_view, "FlatPack::SectionTitle::Component"
+    assert_includes methods_view, "FlatPack::CodeBlock::Component"
+
+    gem_views_view = File.read(File.expand_path("dummy/app/views/docs/gem_views.html.erb", __dir__))
+    assert_includes gem_views_view, "FlatPack::List::Component"
+
+    recordable_types_view = File.read(File.expand_path("dummy/app/views/docs/recordable_types.html.erb", __dir__))
+    assert_includes recordable_types_view, "FlatPack::List::Component"
+
+    recordings_tree_view = File.read(File.expand_path("dummy/app/views/docs/recordings_tree.html.erb", __dir__))
+    assert_includes recordings_tree_view, '<ul class="list-disc'
+    refute_includes recordings_tree_view, "Current structure"
+    refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
+  end
+
+  def test_dummy_recordings_tree_view_omits_structure_section_copy
+    recordings_tree_view = File.read(File.expand_path("dummy/app/views/docs/recordings_tree.html.erb", __dir__))
+
+    assert_includes recordings_tree_view, 'title: "Recordings tree"'
+    assert_includes recordings_tree_view, '<ul class="list-disc'
+    recording_tree_partial = File.read(File.expand_path("dummy/app/views/docs/_recording_tree_node.html.erb", __dir__))
+    assert_includes recording_tree_partial, "<li>"
+    refute_includes recordings_tree_view, "Current structure"
+    refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
+  end
+
+  def test_dummy_sidebar_includes_recordings_tree_navigation
+    sidebar_path = File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__)
+    sidebar_source = File.read(sidebar_path)
+
+    assert_includes sidebar_source, 'label: "Recordable types"'
+    assert_includes sidebar_source, "docs_recordable_types_path"
+    assert_includes sidebar_source, 'label: "Recordings tree"'
+    assert_includes sidebar_source, "docs_recordings_tree_path"
+    refute_includes sidebar_source, 'label: "Recording Studio"'
+    refute_includes sidebar_source, 'href: "/recording_studio"'
+  end
+
+  def test_dummy_sidebar_uses_supported_icons_for_install_and_methods
+    sidebar_path = File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__)
+    sidebar_source = File.read(sidebar_path)
+
+    assert_includes sidebar_source, 'label: "Install"'
+    assert_includes sidebar_source, "icon: :arrow_down_tray"
+    assert_includes sidebar_source, 'label: "Methods"'
+    assert_includes sidebar_source, "icon: :code_bracket"
+    refute_includes sidebar_source, "icon: :download"
+    refute_includes sidebar_source, "icon: :code\n"
+  end
+
+  def test_dummy_top_nav_uses_center_slot_to_keep_avatar_right_aligned
+    top_nav_path = File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__)
+    top_nav_source = File.read(top_nav_path)
+
+    assert_includes top_nav_source, "nav.center"
+    assert_includes top_nav_source, 'aria-hidden="true"'
   end
 
   def test_engine_home_page_uses_flatpack_components

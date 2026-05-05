@@ -6,7 +6,7 @@ Internal template for building Rails engine addons on top of RecordingStudio.
 
 - **RecordingStudio** gem installed and configured
 - **Devise** authentication with a pre-seeded admin user
-- **Workspace** root recording set up following RecordingStudio's Quick Start pattern
+- **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
 - **FlatPack** UI component library for all views
 - **Dummy app** (`test/dummy/`) with a working login screen and FlatPack default sidebar layout for authenticated pages
 
@@ -42,6 +42,7 @@ The login form is prefilled with these credentials for fast access.
 This template follows RecordingStudio's root recording pattern:
 
 - **Workspace** is the top-level recordable
+- **Folder** and **Page** demonstrate nested recordables under the workspace root
 - A root `RecordingStudio::Recording` wraps the Workspace
 - The admin user has root-level admin access via `RecordingStudio::Access`
 - `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
