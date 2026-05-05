@@ -7,7 +7,9 @@
 
   <%= render FlatPack::List::Component.new(divider: true) do %>
     <% Array(@engine_views).each do |view_path| %>
-      <%= render FlatPack::List::Item.new(icon: :eye) { view_path } %>
+      <%= render FlatPack::List::Item.new(icon: :eye) do %>
+        <span><%= view_path %></span>
+      <% end %>
     <% end %>
   <% end %>
 </div>

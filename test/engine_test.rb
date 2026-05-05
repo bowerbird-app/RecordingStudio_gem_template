@@ -114,12 +114,10 @@ class EngineTest < Minitest::Test
     xcfg = Struct.new(:gem_template).new({ timeout: 22 })
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
+      attr_accessor :yaml
+
       def config_for(_name)
         @yaml
-      end
-
-      def yaml=(value)
-        @yaml = value
       end
     end.new(app_config)
     app.yaml = yaml
@@ -268,7 +266,10 @@ class EngineTest < Minitest::Test
       end
     end
 
-    assert_equal [:"Admin::ReportsController", :ReportsController], GemTemplate::Engine.send(:extension_keys_for, namespaced)
+    expected_keys = [:"Admin::ReportsController"]
+    expected_keys << :ReportsController
+
+    assert_equal expected_keys, GemTemplate::Engine.send(:extension_keys_for, namespaced)
   end
 
   def test_extension_keys_for_removes_duplicate_names

@@ -41,34 +41,23 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "recordable types page renders configured recordables dynamically" do
-    original_recordable_types = RecordingStudio.configuration.recordable_types
-    RecordingStudio.configuration.recordable_types = [Workspace, "RecordingStudio::AccessBoundary"]
+    with_recordable_types([Workspace, "RecordingStudio::AccessBoundary"]) do
+      summary_data = create_recordable_type_summary_data
 
-    workspace_recordings_before = RecordingStudio::Recording.where(recordable_type: "Workspace").count
-    workspaces_before = Workspace.count
-    boundary_recordings_before = RecordingStudio::Recording.where(recordable_type: "RecordingStudio::AccessBoundary").count
-    boundaries_before = RecordingStudio::AccessBoundary.count
+      get docs_recordable_types_path
+      response_text = response.body.gsub(/\s+/, " ").strip
 
-    workspace = Workspace.create!(name: "Counted Workspace")
-    2.times { RecordingStudio::Recording.create!(recordable: workspace) }
-
-    access_boundary = RecordingStudio::AccessBoundary.create!(minimum_role: :view)
-    RecordingStudio::Recording.create!(recordable: access_boundary)
-
-    get docs_recordable_types_path
-    response_text = response.body.gsub(/\s+/, " ").strip
-
-    assert_response :success
-    assert_select "h1", text: "Recordable types"
-    assert_includes response.body, "The list below comes directly from RecordingStudio.configuration.recordable_types."
-    assert_includes response.body, "Workspace"
-    assert_includes response.body, "Access boundary"
-    assert_includes response_text,
-      "#{workspace_recordings_before + 2} recordings point to this type • #{workspaces_before + 1} recordables in the database"
-    assert_includes response_text,
-      "#{boundary_recordings_before + 1} recording point to this type • #{boundaries_before + 1} recordable in the database"
-  ensure
-    RecordingStudio.configuration.recordable_types = original_recordable_types
+      assert_response :success
+      assert_select "h1", text: "Recordable types"
+      assert_includes(
+        response.body,
+        "The list below comes directly from RecordingStudio.configuration.recordable_types."
+      )
+      assert_includes response.body, "Workspace"
+      assert_includes response.body, "Access boundary"
+      assert_includes response_text, summary_data[:workspace]
+      assert_includes response_text, summary_data[:boundary]
+    end
   end
 
   test "recordable types page includes dummy app defaults" do
@@ -136,5 +125,50 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select %(a[href="#{docs_recordings_tree_path}"]), text: /Recordings tree/
     assert_select %(a[href="#{docs_gem_views_path}"]), text: /Gem Views/
     assert_select %(a[href="#{docs_methods_path}"]), text: /Methods/
+  end
+
+  private
+
+  def with_recordable_types(recordable_types)
+    original_recordable_types = RecordingStudio.configuration.recordable_types
+    RecordingStudio.configuration.recordable_types = recordable_types
+    yield
+  ensure
+    RecordingStudio.configuration.recordable_types = original_recordable_types
+  end
+
+  def create_recordable_type_summary_data
+    workspace_recordings_before = RecordingStudio::Recording.where(recordable_type: "Workspace").count
+    workspaces_before = Workspace.count
+    boundary_recordings_before = RecordingStudio::Recording.where(
+      recordable_type: "RecordingStudio::AccessBoundary"
+    ).count
+    boundaries_before = RecordingStudio::AccessBoundary.count
+
+    workspace = Workspace.create!(name: "Counted Workspace")
+    2.times { RecordingStudio::Recording.create!(recordable: workspace) }
+
+    access_boundary = RecordingStudio::AccessBoundary.create!(minimum_role: :view)
+    RecordingStudio::Recording.create!(recordable: access_boundary)
+
+    {
+      workspace: recordable_type_summary(
+        workspace_recordings_before + 2,
+        workspaces_before + 1,
+        "recordings",
+        "recordables"
+      ),
+      boundary: recordable_type_summary(
+        boundary_recordings_before + 1,
+        boundaries_before + 1,
+        "recording",
+        "recordable"
+      )
+    }
+  end
+
+  def recordable_type_summary(recording_count, recordable_count, recording_label, recordable_label)
+    "#{recording_count} #{recording_label} point to this type " \
+      "• #{recordable_count} #{recordable_label} in the database"
   end
 end

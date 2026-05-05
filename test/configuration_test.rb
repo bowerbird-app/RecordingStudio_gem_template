@@ -34,7 +34,7 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_initialize_uses_environment_api_key_and_defaults
-    previous_value = ENV["GEM_TEMPLATE_API_KEY"]
+    previous_value = ENV.fetch("GEM_TEMPLATE_API_KEY", nil)
     ENV["GEM_TEMPLATE_API_KEY"] = "env-token"
 
     configuration = GemTemplate::Configuration.new
