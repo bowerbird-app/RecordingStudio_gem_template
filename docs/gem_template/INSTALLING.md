@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** December 11, 2025
+> *   **Last Updated:** May 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -14,7 +14,7 @@ This guide explains how to install the GemTemplate engine in your Rails applicat
 
 ## Prerequisites
 
-- Rails 7.0+ application
+- Rails 8.1+ application
 - PostgreSQL (recommended for UUID compatibility)
 - TailwindCSS (optional, for styling engine views)
 
@@ -52,8 +52,9 @@ rails generate gem_template:install
 This will:
 1. **Mount the engine** at `/gem_template` in your `config/routes.rb`
 2. **Create a configuration initializer** at `config/initializers/gem_template.rb`
-3. **Configure Tailwind** to include engine views (if Tailwind is detected)
-4. **Display post-installation instructions**
+3. **Optionally create `config/gem_template.yml`** for environment-specific settings
+4. **Configure Tailwind** to include engine and FlatPack sources (if Tailwind is detected)
+5. **Display post-installation instructions**
 
 ---
 
@@ -83,10 +84,11 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all options.
 
 ### Tailwind CSS
 
-If your app uses Tailwind, the generator adds a `@source` directive to include engine views:
+If your app uses Tailwind, the generator adds `@source` directives to include engine views and FlatPack components:
 
 ```css
 @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
+@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
 ```
 
 This ensures Tailwind scans the engine's templates for class names during CSS compilation.
@@ -126,6 +128,7 @@ Add to your `app/assets/tailwind/application.css`:
 
 ```css
 @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
+@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
 ```
 
 Then rebuild:
@@ -143,12 +146,18 @@ bin/rails tailwindcss:build
    bin/rails server
    ```
 
-2. Visit the engine:
+2. Visit the mounted engine root:
    ```
    http://localhost:3000/gem_template
    ```
 
-You should see the engine's welcome page.
+You should reach the mounted engine root route. In this template repository that route renders the engine home page; downstream addons may wire the mount path differently.
+
+3. If the engine ships migrations, install and run them from the host app:
+  ```bash
+  rails generate gem_template:migrations
+  bin/rails db:migrate
+  ```
 
 ---
 
@@ -241,8 +250,8 @@ end
 ## Related Documentation
 
 - [Configuration Guide](CONFIGURATION.md) – All configuration options
-- [Tailwind Setup](TAILWIND.md) – How Tailwind is configured in the engine
+- [CSS and JS Assets Architecture](CSS_JS_ASSETS_ARCHITECTURE.md) – How Tailwind and asset scanning are wired
 
 ---
 
-Happy integrating! 🔌
+Happy integrating!

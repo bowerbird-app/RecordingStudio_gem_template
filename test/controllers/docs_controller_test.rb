@@ -44,14 +44,29 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     original_recordable_types = RecordingStudio.configuration.recordable_types
     RecordingStudio.configuration.recordable_types = [Workspace, "RecordingStudio::AccessBoundary"]
 
+    workspace_recordings_before = RecordingStudio::Recording.where(recordable_type: "Workspace").count
+    workspaces_before = Workspace.count
+    boundary_recordings_before = RecordingStudio::Recording.where(recordable_type: "RecordingStudio::AccessBoundary").count
+    boundaries_before = RecordingStudio::AccessBoundary.count
+
+    workspace = Workspace.create!(name: "Counted Workspace")
+    2.times { RecordingStudio::Recording.create!(recordable: workspace) }
+
+    access_boundary = RecordingStudio::AccessBoundary.create!(minimum_role: :view)
+    RecordingStudio::Recording.create!(recordable: access_boundary)
+
     get docs_recordable_types_path
+    response_text = response.body.gsub(/\s+/, " ").strip
 
     assert_response :success
     assert_select "h1", text: "Recordable types"
     assert_includes response.body, "The list below comes directly from RecordingStudio.configuration.recordable_types."
     assert_includes response.body, "Workspace"
-    assert_includes response.body, "RecordingStudio::AccessBoundary"
     assert_includes response.body, "Access boundary"
+    assert_includes response_text,
+      "#{workspace_recordings_before + 2} recordings point to this type • #{workspaces_before + 1} recordables in the database"
+    assert_includes response_text,
+      "#{boundary_recordings_before + 1} recording point to this type • #{boundaries_before + 1} recordable in the database"
   ensure
     RecordingStudio.configuration.recordable_types = original_recordable_types
   end

@@ -33,6 +33,27 @@ class ConfigurationTest < Minitest::Test
     assert_equal original[:enable_feature_x], @configuration.enable_feature_x
   end
 
+  def test_initialize_uses_environment_api_key_and_defaults
+    previous_value = ENV["GEM_TEMPLATE_API_KEY"]
+    ENV["GEM_TEMPLATE_API_KEY"] = "env-token"
+
+    configuration = GemTemplate::Configuration.new
+
+    assert_equal "env-token", configuration.api_key
+    assert_equal false, configuration.enable_feature_x
+    assert_equal 5, configuration.timeout
+    assert_instance_of GemTemplate::Hooks, configuration.hooks
+  ensure
+    ENV["GEM_TEMPLATE_API_KEY"] = previous_value
+  end
+
+  def test_merge_accepts_string_keys
+    @configuration.merge!("api_key" => "string-key", "timeout" => 12)
+
+    assert_equal "string-key", @configuration.api_key
+    assert_equal 12, @configuration.timeout
+  end
+
   def test_to_h_reports_registered_hook_counts
     @configuration.hooks.before_initialize { nil }
     @configuration.hooks.before_initialize { nil }

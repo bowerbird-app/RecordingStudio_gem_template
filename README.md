@@ -8,7 +8,9 @@ Internal template for building Rails engine addons on top of RecordingStudio.
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
 - **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a working login screen and FlatPack default sidebar layout for authenticated pages
+- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, and mounted RecordingStudio routes
+
+The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy.
 
 ## Quick Start
 
@@ -22,9 +24,9 @@ Internal template for building Rails engine addons on top of RecordingStudio.
    bin/rails db:setup
    bin/dev
    ```
-4. Open port 3000 — you'll see the login screen
+4. Open port 3000 — you'll land on the dummy app home page and can sign in at `/users/sign_in`
 
-The dummy app already includes FlatPack generator output (`flat_pack:install` and default sidebar layout scaffold) so authenticated pages render with the FlatPack sidebar shell by default.
+The dummy app is intended as a host-app validation surface for authentication, FlatPack rendering, Tailwind source scanning, and RecordingStudio route wiring.
 
 ### Login Credentials
 
@@ -34,6 +36,16 @@ The dummy app already includes FlatPack generator output (`flat_pack:install` an
 | Password | Password          |
 
 The login form is prefilled with these credentials for fast access.
+
+### Useful Routes
+
+- `/` — dummy app home page
+- `/users/sign_in` — Devise sign-in page
+- `/recording_studio` — redirect to `/` while the mounted RecordingStudio engine remains data/API-focused
+- `/docs/install` — install guide rendered inside the dummy app
+- `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` — starter sidebar pages to customize for your gem
+
+The home page in `test/dummy/app/views/home/index.html.erb` is also a deliberate starting point. Keep it focused on a minimal demo of the gem's primary behavior; use the sidebar pages for deeper explanations and supporting reference material.
 
 ## Architecture
 

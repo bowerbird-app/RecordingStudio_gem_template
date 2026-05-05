@@ -42,8 +42,20 @@ class DocsController < ApplicationController
 
     {
       name: type_name,
-      label: type_name.demodulize.underscore.humanize
+      label: type_name.demodulize.underscore.humanize,
+      recordings_count: RecordingStudio::Recording.where(recordable_type: type_name).count,
+      recordables_count: count_recordables_for(type_name)
     }
+  end
+
+  def count_recordables_for(type_name)
+    recordable_class = type_name.safe_constantize
+    return 0 unless recordable_class&.<= ActiveRecord::Base
+    return 0 unless recordable_class.table_exists?
+
+    recordable_class.count
+  rescue ActiveRecord::ActiveRecordError
+    0
   end
 
   def build_recording_node(recording, recordings_by_parent_id)
