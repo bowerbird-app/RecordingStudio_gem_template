@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** December 11, 2025
+> *   **Last Updated:** May 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -28,8 +28,8 @@ This guide covers setting up the gem for local development outside of GitHub Cod
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/bowerbird-app/gem_template.git
-cd gem_template
+git clone https://github.com/bowerbird-app/RecordingStudio_gem_template.git
+cd RecordingStudio_gem_template
 ```
 
 ### 2. Install Gem Dependencies
@@ -58,15 +58,9 @@ default: &default
   port: <%= ENV.fetch("DB_PORT", 5432) %>
 ```
 
-### 5. Run Tests
+Edit the username and password too if your local PostgreSQL credentials differ:
 
-```bash
-bundle exec rake test
-```
-
----
-
-## Troubleshooting
+```yaml
   username: <%= ENV.fetch("DB_USER", "postgres") %>
   password: <%= ENV.fetch("DB_PASSWORD", "postgres") %>
 ```
@@ -110,7 +104,14 @@ bin/rails server
 
 ### 8. Visit the App
 
-Open http://localhost:3000/gem_template
+Open http://localhost:3000
+
+### 9. Run Tests
+
+```bash
+cd ..
+bundle exec rake test
+```
 
 ---
 
@@ -211,7 +212,7 @@ gem_template/
 
 - [Rename the gem](RENAMING.md) to your own name
 - [Configure the gem](CONFIGURATION.md) with your settings
-- [Understand Tailwind setup](TAILWIND.md)
+- [Understand Tailwind setup](CSS_JS_ASSETS_ARCHITECTURE.md)
 - [Install in a host app](INSTALLING.md)
 
 ---

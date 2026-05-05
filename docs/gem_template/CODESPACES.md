@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** December 12, 2025
+> *   **Last Updated:** May 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -22,7 +22,7 @@ This document covers how the devcontainer is configured and how to work in GitHu
    bin/dev
    ```
 4. **Open the app** – click the forwarded port 3000 in the "Ports" tab.
-5. **Visit the engine** at `/gem_template`.
+5. **Start from the dummy app home page** at `/` and use `/users/sign_in` or `/docs/install` as needed.
 
 ---
 

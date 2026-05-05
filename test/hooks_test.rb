@@ -102,6 +102,30 @@ class HooksTest < Minitest::Test
     assert_equal ["ServiceClass", { name: "test" }], received_args
   end
 
+  def test_registration_without_handler_or_block_is_noop
+    @hooks.after_initialize
+
+    refute @hooks.registered?(:after_initialize)
+  end
+
+  def test_handler_with_to_proc_only_executes
+    handler = Object.new
+    handler.define_singleton_method(:to_proc) do
+      proc { |value| value * 2 }
+    end
+
+    @hooks.on(:custom_event, handler)
+
+    assert_equal [6], @hooks.run(:custom_event, 3)
+  end
+
+  def test_run_returns_results_in_priority_order
+    @hooks.after_initialize(priority: 20) { :second }
+    @hooks.after_initialize(priority: 10) { :first }
+
+    assert_equal %i[first second], @hooks.run(:after_initialize)
+  end
+
   # === Priority Tests ===
 
   def test_hooks_run_in_priority_order
@@ -211,6 +235,28 @@ class HooksTest < Minitest::Test
     assert_equal 2, extensions.size
   end
 
+  def test_extend_model_without_block_is_noop
+    @hooks.extend_model(:Example)
+
+    assert_empty @hooks.model_extensions_for(:Example)
+  end
+
+  def test_extend_controller_without_block_is_noop
+    @hooks.extend_controller(:HomeController)
+
+    assert_empty @hooks.controller_extensions_for(:HomeController)
+  end
+
+  def test_extensions_for_multiple_names_are_flattened
+    @hooks.extend_model(:Example) { :example }
+    @hooks.extend_model(:SharedExample) { :shared }
+    @hooks.extend_controller(:HomeController) { :home }
+    @hooks.extend_controller(:AdminHomeController) { :admin_home }
+
+    assert_equal 2, @hooks.model_extensions_for(%i[Example SharedExample]).size
+    assert_equal 2, @hooks.controller_extensions_for(%i[HomeController AdminHomeController]).size
+  end
+
   # === Error Handling Tests ===
 
   def test_hook_error_does_not_stop_other_hooks_by_default
@@ -232,6 +278,31 @@ class HooksTest < Minitest::Test
     assert_raises(GemTemplate::Hooks::HookError) do
       @hooks.run(:after_initialize)
     end
+  end
+
+  def test_hook_errors_are_logged_when_logger_is_available
+    logger = Class.new do
+      attr_reader :messages
+
+      def initialize
+        @messages = []
+      end
+
+      def error(message)
+        @messages << message
+      end
+    end.new
+    error = RuntimeError.new("logged error")
+    error.set_backtrace(%w[line1 line2 line3 line4 line5 line6])
+
+    @hooks.after_initialize { raise error }
+
+    Rails.stub(:logger, logger) do
+      @hooks.run(:after_initialize)
+    end
+
+    assert_includes logger.messages.first, "logged error"
+    assert_equal "line1\nline2\nline3\nline4\nline5", logger.messages.last
   end
 
   # === Clear Tests ===
@@ -279,6 +350,24 @@ class HooksTest < Minitest::Test
     GemTemplate::Hooks.trigger(:custom_event)
 
     assert called
+  ensure
+    GemTemplate.configuration.hooks.clear!
+  end
+
+  def test_class_run_around_delegates_to_configuration
+    events = []
+    GemTemplate.configuration.hooks.around_service do |_context, block|
+      events << :around
+      block.call
+    end
+
+    result = GemTemplate::Hooks.run_around(:around_service, :service) do
+      events << :core
+      :ok
+    end
+
+    assert_equal %i[around core], events
+    assert_equal :ok, result
   ensure
     GemTemplate.configuration.hooks.clear!
   end

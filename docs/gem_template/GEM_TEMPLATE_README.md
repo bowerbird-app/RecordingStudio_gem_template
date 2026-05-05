@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** December 12, 2025
+> *   **Last Updated:** May 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -25,6 +25,7 @@ A template for building **Rails mountable engine gems** with PostgreSQL UUID pri
 - ✓ Install generator for host applications
 - ✓ Migrations generator for database setup
 - ✓ Service object pattern with Result monad
+- ✓ Dummy app sidebar with starter documentation pages and a minimal demo home page
 
 ---
 
@@ -37,9 +38,10 @@ A template for building **Rails mountable engine gems** with PostgreSQL UUID pri
 3. Run:
    ```bash
    cd test/dummy
+   bin/rails db:setup
    bin/dev
    ```
-4. Open port 3000 and visit `/gem_template`
+4. Open port 3000 and visit `/`
 
 → [Codespaces Setup Guide](CODESPACES.md)
 
@@ -50,6 +52,12 @@ A template for building **Rails mountable engine gems** with PostgreSQL UUID pri
 3. Run `bin/dev`
 
 → [Local Development Guide](LOCAL_DEVELOPMENT.md)
+
+## Dummy App Guidance
+
+The dummy app includes a starter authenticated sidebar in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` with linked pages for install, config, recordable types, recordings tree, gem views, and methods. Those pages are intentionally scaffolded examples with a consistent FlatPack style; update their labels, routes, and content so they fit the gem you are building.
+
+The home page in `test/dummy/app/views/home/index.html.erb` is the corresponding starting point for a very minimal demo of the gem's primary behavior. Keep it narrowly focused and use the sidebar pages for the broader explanation of concepts, setup, and API surface.
 
 ---
 
@@ -114,4 +122,4 @@ MIT – see [MIT-LICENSE](../../MIT-LICENSE)
 
 ---
 
-**Happy coding! 🎉**
+**Happy coding!**
