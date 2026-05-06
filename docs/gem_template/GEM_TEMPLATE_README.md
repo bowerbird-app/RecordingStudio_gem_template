@@ -59,6 +59,8 @@ The dummy app includes a starter authenticated sidebar in `test/dummy/app/views/
 
 The home page in `test/dummy/app/views/home/index.html.erb` is the corresponding starting point for a very minimal demo of the gem's primary behavior. Keep it narrowly focused and use the sidebar pages for the broader explanation of concepts, setup, and API surface.
 
+For current UI work, prefer the top-level README plus the live FlatPack demo app at `https://flatpack-c6p8f.ondigitalocean.app/`. Its component table is the quickest way to discover shared components, user-provided FlatPack demo URLs should be treated as task context, and if the demo is blocked in Codespaces or another restricted environment, ask for access or request sanitized screenshots, copied markup, or component details instead of guessing.
+
 ---
 
 ## 📚 Documentation

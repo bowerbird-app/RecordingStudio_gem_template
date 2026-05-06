@@ -39,10 +39,12 @@ Use `Rails Gem Architect` as the default implementation specialist when the user
 1. **Triage first**
 	 - Classify the request into one or more domains.
 	 - Identify risks, required files, and expected outputs.
+	 - Treat user-provided FlatPack demo URLs as task context and pass them into any delegated UI work.
 
 2. **Delegate deliberately**
 	 - Send the smallest clear sub-task to each specialist.
 	 - Include relevant constraints from user instructions.
+	 - For UI work, tell the specialist to check existing FlatPack components first, using the live FlatPack demo app (`https://flatpack-c6p8f.ondigitalocean.app/`) and its component table when relevant.
 	 - Avoid redundant delegation when one specialist is enough.
 
 3. **Integrate and decide**
@@ -63,4 +65,5 @@ Use `Rails Gem Architect` as the default implementation specialist when the user
 - Do not weaken security controls for convenience.
 - Preserve behavior unless the user explicitly asks for a change.
 - Prefer existing project patterns and approved components.
+- If the FlatPack demo app is not reachable in Codespaces or another restricted environment, ask the user to enable access or share sanitized screenshots, copied markup, or component details before making UI assumptions.
 - Escalate ambiguous requirements with concise clarifying questions.
