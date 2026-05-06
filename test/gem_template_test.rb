@@ -28,6 +28,15 @@ class GemTemplateTest < Minitest::Test
     assert_includes sidebar_layout, '<html data-theme="rounded" class="h-full overflow-hidden overscroll-none">'
   end
 
+  def test_dummy_tailwind_keeps_flatpack_theme_selection_in_flatpack
+    tailwind_source = File.read(File.expand_path("dummy/app/assets/tailwind/application.css", __dir__))
+
+    assert_includes tailwind_source, 'flatpack-*/app/components/**/*.{rb,erb}'
+    refute_includes tailwind_source, "@theme"
+    refute_includes tailwind_source, ":root {"
+    refute_includes tailwind_source, "--color-fp-primary"
+  end
+
   def test_recording_studio_capabilities_are_off_by_default
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
