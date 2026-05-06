@@ -32,6 +32,7 @@ class GemTemplateTest < Minitest::Test
     tailwind_source = File.read(File.expand_path("dummy/app/assets/tailwind/application.css", __dir__))
 
     assert_includes tailwind_source, 'flatpack-*/app/components/**/*.{rb,erb}'
+    assert_includes tailwind_source, 'recordingstudio-*/app/views/**/*.erb'
     refute_includes tailwind_source, "@theme"
     refute_includes tailwind_source, ":root {"
     refute_includes tailwind_source, "--color-fp-primary"
@@ -51,6 +52,7 @@ class GemTemplateTest < Minitest::Test
 
     assert_includes readme_source, "This Rails app exists to validate the Recording Studio addon template"
     assert_includes readme_source, "/recording_studio"
+    assert_includes readme_source, "redirects to `/`"
   end
 
   def test_dummy_home_page_uses_demo_title_only
