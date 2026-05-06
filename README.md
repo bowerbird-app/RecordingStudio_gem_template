@@ -8,9 +8,9 @@ Internal template for building Rails engine addons on top of RecordingStudio.
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
 - **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, and mounted RecordingStudio routes
+- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, mounted RecordingStudio routes, and FlatPack's built-in rounded theme enabled by default
 
-The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy.
+The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy. By default, that starter shell uses FlatPack's built-in rounded theme via the root layout attribute rather than custom Tailwind theme recreation.
 
 ## Quick Start
 

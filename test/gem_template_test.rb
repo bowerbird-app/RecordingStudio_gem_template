@@ -20,6 +20,14 @@ class GemTemplateTest < Minitest::Test
     assert_includes controller_source, "flat_pack_sidebar"
   end
 
+  def test_dummy_layouts_default_to_flatpack_rounded_theme
+    application_layout = File.read(File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__))
+    sidebar_layout = File.read(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
+
+    assert_includes application_layout, '<html data-theme="rounded">'
+    assert_includes sidebar_layout, '<html data-theme="rounded" class="h-full overflow-hidden overscroll-none">'
+  end
+
   def test_recording_studio_capabilities_are_off_by_default
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
