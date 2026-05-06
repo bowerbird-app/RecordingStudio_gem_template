@@ -125,6 +125,10 @@ All views use FlatPack ViewComponents. Available components include:
 - `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
 - `FlatPack::Navbar::Component` — Navigation sidebar
 
+Use the live FlatPack demo app at [flatpack-c6p8f.ondigitalocean.app](https://flatpack-c6p8f.ondigitalocean.app/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI, and user-provided FlatPack demo URLs should be treated as task context.
+
+In GitHub Codespaces or other restricted environments, you may need to enable access to that URL before the agent can inspect the app. If access is unavailable, provide sanitized screenshots, copied markup, or component details so the agent can stay aligned with the shared UI.
+
 See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
 
 ## Tech Stack
