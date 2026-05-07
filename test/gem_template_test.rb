@@ -20,6 +20,26 @@ class GemTemplateTest < Minitest::Test
     assert_includes controller_source, "flat_pack_sidebar"
   end
 
+  def test_dummy_layouts_default_to_flatpack_rounded_theme
+    application_layout = File.read(File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__))
+    sidebar_layout = File.read(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
+
+    assert_includes application_layout, '<html data-theme="rounded">'
+    assert_includes sidebar_layout, '<html data-theme="rounded" class="h-full overflow-hidden overscroll-none">'
+  end
+
+  def test_dummy_tailwind_keeps_flatpack_theme_selection_in_flatpack
+    tailwind_source = File.read(File.expand_path("dummy/app/assets/tailwind/application.css", __dir__))
+
+    assert_includes tailwind_source, "../../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}"
+    assert_includes tailwind_source, "flatpack-*/app/components/**/*.{rb,erb}"
+    assert_includes tailwind_source, "../../../vendor/bundle/**/recording_studio/app/views/**/*.erb"
+    assert_includes tailwind_source, "recordingstudio-*/app/views/**/*.erb"
+    refute_includes tailwind_source, "@theme"
+    refute_includes tailwind_source, ":root {"
+    refute_includes tailwind_source, "--color-fp-primary"
+  end
+
   def test_recording_studio_capabilities_are_off_by_default
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
@@ -34,6 +54,7 @@ class GemTemplateTest < Minitest::Test
 
     assert_includes readme_source, "This Rails app exists to validate the Recording Studio addon template"
     assert_includes readme_source, "/recording_studio"
+    assert_includes readme_source, "redirects to `/`"
   end
 
   def test_dummy_home_page_uses_demo_title_only
