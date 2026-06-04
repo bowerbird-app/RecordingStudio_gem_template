@@ -9,11 +9,8 @@ class DocsController < ApplicationController
   end
 
   def recordable_types
-    @recordable_declaration_error = nil
     RecordingStudio.validate_recordable_declarations!
-  rescue StandardError => e
-    @recordable_declaration_error = e.message
-  ensure
+
     @recordable_types = RecordingStudio.recordable_declarations.values.sort_by(&:type).map do |declaration|
       normalize_recordable_declaration(declaration)
     end

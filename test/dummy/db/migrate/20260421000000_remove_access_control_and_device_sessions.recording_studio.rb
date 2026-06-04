@@ -2,7 +2,31 @@
 
 # This migration comes from recording_studio (originally 20260421000000)
 class RemoveAccessControlAndDeviceSessions < ActiveRecord::Migration[8.1]
+  LEGACY_RECORDABLE_TYPES = %w[RecordingStudio::Access RecordingStudio::AccessBoundary].freeze
+
   def up
+    legacy_recording_ids = select_values(<<~SQL.squish)
+      SELECT id FROM recording_studio_recordings
+      WHERE recordable_type IN ('RecordingStudio::Access', 'RecordingStudio::AccessBoundary')
+    SQL
+
+    if legacy_recording_ids.any?
+      quoted_ids = legacy_recording_ids.map { |id| quote(id) }.join(", ")
+
+      execute <<~SQL.squish
+        DELETE FROM recording_studio_events
+        WHERE recording_id IN (#{quoted_ids})
+           OR recordable_type IN ('RecordingStudio::Access', 'RecordingStudio::AccessBoundary')
+      SQL
+
+      LEGACY_RECORDABLE_TYPES.each do |recordable_type|
+        execute <<~SQL.squish
+          DELETE FROM recording_studio_recordings
+          WHERE recordable_type = #{quote(recordable_type)}
+        SQL
+      end
+    end
+
     remove_index :recording_studio_recordings, name: "idx_rs_recordings_root_access", if_exists: true
     remove_index :recording_studio_recordings,
                  name: "index_rs_unique_active_access_boundary_per_parent",

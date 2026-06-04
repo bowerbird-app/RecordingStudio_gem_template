@@ -13,22 +13,29 @@ workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
 folder = Folder.find_or_create_by!(name: "Product Docs")
 page = Page.find_or_create_by!(title: "Getting Started")
 
-# Create the root recording
-root_recording = RecordingStudio.root_recording_for(workspace)
-
-folder_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
-  root_recording: root_recording,
-  parent_recording: root_recording,
-  recordable: folder
-)
-
-RecordingStudio::Recording.unscoped.find_or_create_by!(
-  root_recording: root_recording,
-  parent_recording: folder_recording,
-  recordable: page
-)
-
+previous_actor = Current.actor
 Current.actor = user
+
+begin
+  # Create the root recording
+  root_recording = RecordingStudio.root_recording_for(workspace)
+
+  folder_recording = RecordingStudio::Recording.find_or_create_by!(
+    root_recording: root_recording,
+    parent_recording: root_recording,
+    recordable: folder,
+    trashed_at: nil
+  )
+
+  RecordingStudio::Recording.find_or_create_by!(
+    root_recording: root_recording,
+    parent_recording: folder_recording,
+    recordable: page,
+    trashed_at: nil
+  )
+ensure
+  Current.actor = previous_actor
+end
 
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
