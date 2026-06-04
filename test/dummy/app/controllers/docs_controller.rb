@@ -9,8 +9,13 @@ class DocsController < ApplicationController
   end
 
   def recordable_types
-    @recordable_types = Array(RecordingStudio.configuration.recordable_types).filter_map do |recordable_type|
-      normalize_recordable_type(recordable_type)
+    @recordable_declaration_error = nil
+    RecordingStudio.validate_recordable_declarations!
+  rescue StandardError => e
+    @recordable_declaration_error = e.message
+  ensure
+    @recordable_types = RecordingStudio.recordable_declarations.values.sort_by(&:type).map do |declaration|
+      normalize_recordable_declaration(declaration)
     end
   end
 
@@ -36,15 +41,14 @@ class DocsController < ApplicationController
 
   private
 
-  def normalize_recordable_type(recordable_type)
-    type_name = recordable_type.is_a?(Class) ? recordable_type.name : recordable_type.to_s
-    return if type_name.blank?
-
+  def normalize_recordable_declaration(declaration)
     {
-      name: type_name,
-      label: type_name.demodulize.underscore.humanize,
-      recordings_count: RecordingStudio::Recording.where(recordable_type: type_name).count,
-      recordables_count: count_recordables_for(type_name)
+      name: declaration.type,
+      label: declaration.label,
+      root: declaration.root?,
+      allowed_parent_types: RecordingStudio.allowed_parent_types_for(declaration.type),
+      recordings_count: RecordingStudio::Recording.where(recordable_type: declaration.type).count,
+      recordables_count: count_recordables_for(declaration.type)
     }
   end
 

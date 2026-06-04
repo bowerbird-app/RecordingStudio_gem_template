@@ -14,31 +14,21 @@ folder = Folder.find_or_create_by!(name: "Product Docs")
 page = Page.find_or_create_by!(title: "Getting Started")
 
 # Create the root recording
-root_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
-  recordable: workspace,
-  parent_recording_id: nil
-)
+root_recording = RecordingStudio.root_recording_for(workspace)
 
 folder_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
-  root_recording_id: root_recording.id,
-  parent_recording_id: root_recording.id,
+  root_recording: root_recording,
+  parent_recording: root_recording,
   recordable: folder
 )
 
 RecordingStudio::Recording.unscoped.find_or_create_by!(
-  root_recording_id: root_recording.id,
-  parent_recording_id: folder_recording.id,
+  root_recording: root_recording,
+  parent_recording: folder_recording,
   recordable: page
 )
 
-# Grant root-level admin access to the admin user
 Current.actor = user
-access = RecordingStudio::Access.find_or_create_by!(actor: user, role: :admin)
-RecordingStudio::Recording.unscoped.find_or_create_by!(
-  root_recording_id: root_recording.id,
-  parent_recording_id: root_recording.id,
-  recordable: access
-)
 
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"

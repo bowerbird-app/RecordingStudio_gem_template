@@ -40,11 +40,13 @@ class GemTemplateTest < Minitest::Test
     refute_includes tailwind_source, "--color-fp-primary"
   end
 
-  def test_recording_studio_capabilities_are_off_by_default
+  def test_recording_studio_keeps_strict_recordable_declarations_enabled
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
 
-    assert_includes initializer_source, "Built-in capabilities remain disabled"
+    assert_includes initializer_source, "config.require_recordable_declarations = true"
+    assert_includes initializer_source, "config.recordable_types = [ \"Workspace\", \"Folder\", \"Page\" ]"
+    refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
   end
 

@@ -41,23 +41,25 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "recordable types page renders configured recordables dynamically" do
-    with_recordable_types([Workspace, "RecordingStudio::AccessBoundary"]) do
-      summary_data = create_recordable_type_summary_data
+    summary_data = create_recordable_type_summary_data
 
-      get docs_recordable_types_path
-      response_text = response.body.gsub(/\s+/, " ").strip
+    get docs_recordable_types_path
+    response_text = response.body.gsub(/\s+/, " ").strip
 
-      assert_response :success
-      assert_select "h1", text: "Recordable types"
-      assert_includes(
-        response.body,
-        "The list below comes directly from RecordingStudio.configuration.recordable_types."
-      )
-      assert_includes response.body, "Workspace"
-      assert_includes response.body, "Access boundary"
-      assert_includes response_text, summary_data[:workspace]
-      assert_includes response_text, summary_data[:boundary]
-    end
+    assert_response :success
+    assert_select "h1", text: "Recordable types"
+    assert_includes(
+      response.body,
+      "The list below comes from RecordingStudio.recordable_declarations and v3 parent/root introspection."
+    )
+    assert_includes response.body, "Workspace"
+    assert_includes response.body, "Folder"
+    assert_includes response.body, "Page"
+    assert_includes response_text, "Root recordable"
+    assert_includes response_text, "Child recordable"
+    assert_includes response_text, "Allowed parents: Workspace, Folder"
+    assert_includes response_text, summary_data[:workspace]
+    assert_includes response_text, summary_data[:folder]
   end
 
   test "recordable types page includes dummy app defaults" do
@@ -71,18 +73,11 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "recordings tree page renders successfully" do
     workspace = Workspace.create!(name: "Tree Workspace")
-    root_recording = RecordingStudio::Recording.create!(recordable: workspace)
+    root_recording = RecordingStudio.root_recording_for(workspace)
     folder = Folder.create!(name: "Reference")
     folder_recording = RecordingStudio::Recording.create!(recordable: folder, parent_recording: root_recording)
     page = Page.create!(title: "API")
     RecordingStudio::Recording.create!(recordable: page, parent_recording: folder_recording)
-    access_boundary = RecordingStudio::AccessBoundary.create!(minimum_role: :edit)
-    boundary_recording = RecordingStudio::Recording.create!(
-      recordable: access_boundary,
-      parent_recording: root_recording
-    )
-    access = RecordingStudio::Access.create!(actor: @user, role: :admin)
-    RecordingStudio::Recording.create!(recordable: access, parent_recording: boundary_recording)
 
     get docs_recordings_tree_path
 
@@ -91,8 +86,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace: Tree Workspace"
     assert_includes response.body, "Folder: Reference"
     assert_includes response.body, "Page: API"
-    assert_includes response.body, "Access boundary: Edit"
-    assert_includes response.body, "Access: Admin for #{@user.email}"
+    refute_includes response.body, "Access boundary"
+    refute_includes response.body, "Access: Admin"
     assert_select "ul.list-disc", minimum: 2
     refute_includes response.body, "Current structure"
     refute_includes response.body, "This tree is generated from RecordingStudio::Recording records"
@@ -129,38 +124,31 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   private
 
-  def with_recordable_types(recordable_types)
-    original_recordable_types = RecordingStudio.configuration.recordable_types
-    RecordingStudio.configuration.recordable_types = recordable_types
-    yield
-  ensure
-    RecordingStudio.configuration.recordable_types = original_recordable_types
-  end
-
   def create_recordable_type_summary_data
     workspace_recordings_before = RecordingStudio::Recording.where(recordable_type: "Workspace").count
     workspaces_before = Workspace.count
-    boundary_recordings_before = RecordingStudio::Recording.where(
-      recordable_type: "RecordingStudio::AccessBoundary"
-    ).count
-    boundaries_before = RecordingStudio::AccessBoundary.count
+    folder_recordings_before = RecordingStudio::Recording.where(recordable_type: "Folder").count
+    folders_before = Folder.count
 
     workspace = Workspace.create!(name: "Counted Workspace")
-    2.times { RecordingStudio::Recording.create!(recordable: workspace) }
+    2.times do
+      RecordingStudio.root_recording_for(Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"))
+    end
 
-    access_boundary = RecordingStudio::AccessBoundary.create!(minimum_role: :view)
-    RecordingStudio::Recording.create!(recordable: access_boundary)
+    root_recording = RecordingStudio.root_recording_for(workspace)
+    folder = Folder.create!(name: "Counted Folder")
+    RecordingStudio::Recording.create!(recordable: folder, parent_recording: root_recording)
 
     {
       workspace: recordable_type_summary(
-        workspace_recordings_before + 2,
-        workspaces_before + 1,
+        workspace_recordings_before + 3,
+        workspaces_before + 3,
         "recordings",
         "recordables"
       ),
-      boundary: recordable_type_summary(
-        boundary_recordings_before + 1,
-        boundaries_before + 1,
+      folder: recordable_type_summary(
+        folder_recordings_before + 1,
+        folders_before + 1,
         "recording",
         "recordable"
       )
