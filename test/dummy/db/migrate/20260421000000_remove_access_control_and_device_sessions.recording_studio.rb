@@ -12,6 +12,15 @@ class RemoveAccessControlAndDeviceSessions < ActiveRecord::Migration[8.1]
 
     if legacy_recording_ids.any?
       quoted_ids = legacy_recording_ids.map { |id| quote(id) }.join(", ")
+      unsafe_child_count = select_value(<<~SQL.squish)
+        SELECT COUNT(*) FROM recording_studio_recordings
+        WHERE parent_recording_id IN (#{quoted_ids})
+          AND recordable_type NOT IN ('RecordingStudio::Access', 'RecordingStudio::AccessBoundary')
+      SQL
+      if unsafe_child_count.to_i.positive?
+        raise ActiveRecord::IrreversibleMigration,
+              "legacy access boundary recordings still have non-legacy children"
+      end
 
       execute <<~SQL.squish
         DELETE FROM recording_studio_events

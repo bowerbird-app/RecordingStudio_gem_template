@@ -40,6 +40,17 @@ class RecordingStudioV3Test < ActiveSupport::TestCase
     assert_equal root_recording, event.recording.parent_recording
   end
 
+  test "page can be recorded under allowed workspace and folder parents" do
+    root_recording = RecordingStudio.root_recording_for(Workspace.create!(name: unique_name("Page Workspace")))
+    folder_recording = record_child(Folder.new(name: unique_name("Page Folder")), root_recording, root_recording)
+
+    workspace_page_recording = record_child(Page.new(title: unique_name("Workspace Page")), root_recording, root_recording)
+    folder_page_recording = record_child(Page.new(title: unique_name("Folder Page")), root_recording, folder_recording)
+
+    assert_equal root_recording, workspace_page_recording.parent_recording
+    assert_equal folder_recording, folder_page_recording.parent_recording
+  end
+
   test "child recordable cannot be created as a root" do
     folder = Folder.create!(name: unique_name("Root Rejected Folder"))
 
@@ -57,7 +68,30 @@ class RecordingStudioV3Test < ActiveSupport::TestCase
     assert_includes recording.errors[:parent_recording_id].join, "cannot be blank"
   end
 
+  test "page cannot be recorded under another page" do
+    root_recording = RecordingStudio.root_recording_for(Workspace.create!(name: unique_name("Invalid Page Workspace")))
+    page_recording = record_child(Page.new(title: unique_name("Parent Page")), root_recording, root_recording)
+    nested_page = Page.create!(title: unique_name("Nested Page"))
+    recording = RecordingStudio::Recording.new(
+      root_recording: root_recording,
+      parent_recording: page_recording,
+      recordable: nested_page
+    )
+
+    assert_not recording.valid?
+    assert_includes recording.errors[:parent_recording_id].join, "is not allowed"
+  end
+
   private
+
+  def record_child(recordable, root_recording, parent_recording)
+    RecordingStudio.record!(
+      action: "created",
+      recordable: recordable,
+      root_recording: root_recording,
+      parent_recording: parent_recording
+    ).recording
+  end
 
   def unique_name(prefix)
     "#{prefix} #{SecureRandom.hex(4)}"

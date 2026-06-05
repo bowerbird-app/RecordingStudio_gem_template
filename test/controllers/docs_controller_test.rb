@@ -75,9 +75,9 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     workspace = Workspace.create!(name: "Tree Workspace")
     root_recording = RecordingStudio.root_recording_for(workspace)
     folder = Folder.create!(name: "Reference")
-    folder_recording = RecordingStudio::Recording.create!(recordable: folder, parent_recording: root_recording)
+    folder_recording = record_child(folder, root_recording, root_recording)
     page = Page.create!(title: "API")
-    RecordingStudio::Recording.create!(recordable: page, parent_recording: folder_recording)
+    record_child(page, root_recording, folder_recording)
 
     get docs_recordings_tree_path
 
@@ -137,7 +137,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     root_recording = RecordingStudio.root_recording_for(workspace)
     folder = Folder.create!(name: "Counted Folder")
-    RecordingStudio::Recording.create!(recordable: folder, parent_recording: root_recording)
+    record_child(folder, root_recording, root_recording)
 
     {
       workspace: recordable_type_summary(
@@ -158,5 +158,14 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
   def recordable_type_summary(recording_count, recordable_count, recording_label, recordable_label)
     "#{recording_count} #{recording_label} point to this type " \
       "• #{recordable_count} #{recordable_label} in the database"
+  end
+
+  def record_child(recordable, root_recording, parent_recording)
+    RecordingStudio.record!(
+      action: "created",
+      recordable: recordable,
+      root_recording: root_recording,
+      parent_recording: parent_recording
+    ).recording
   end
 end
