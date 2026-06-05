@@ -10,8 +10,8 @@ class RecordingStudioV3Test < ActiveSupport::TestCase
   test "dummy recordable declarations validate and expose v3 introspection" do
     assert RecordingStudio.validate_recordable_declarations!
     assert_equal ["Workspace"], RecordingStudio.root_recordable_types
-    assert_equal ["Workspace", "Folder"], RecordingStudio.allowed_parent_types_for("Folder")
-    assert_equal ["Workspace", "Folder"], RecordingStudio.allowed_parent_types_for(Page)
+    assert_equal %w[Workspace Folder], RecordingStudio.allowed_parent_types_for("Folder")
+    assert_equal %w[Workspace Folder], RecordingStudio.allowed_parent_types_for(Page)
   end
 
   test "root recordable creates a root recording" do
@@ -44,7 +44,11 @@ class RecordingStudioV3Test < ActiveSupport::TestCase
     root_recording = RecordingStudio.root_recording_for(Workspace.create!(name: unique_name("Page Workspace")))
     folder_recording = record_child(Folder.new(name: unique_name("Page Folder")), root_recording, root_recording)
 
-    workspace_page_recording = record_child(Page.new(title: unique_name("Workspace Page")), root_recording, root_recording)
+    workspace_page_recording = record_child(
+      Page.new(title: unique_name("Workspace Page")),
+      root_recording,
+      root_recording
+    )
     folder_page_recording = record_child(Page.new(title: unique_name("Folder Page")), root_recording, folder_recording)
 
     assert_equal root_recording, workspace_page_recording.parent_recording
@@ -71,15 +75,11 @@ class RecordingStudioV3Test < ActiveSupport::TestCase
   test "page cannot be recorded under another page" do
     root_recording = RecordingStudio.root_recording_for(Workspace.create!(name: unique_name("Invalid Page Workspace")))
     page_recording = record_child(Page.new(title: unique_name("Parent Page")), root_recording, root_recording)
-    nested_page = Page.create!(title: unique_name("Nested Page"))
-    recording = RecordingStudio::Recording.new(
-      root_recording: root_recording,
-      parent_recording: page_recording,
-      recordable: nested_page
-    )
 
-    assert_not recording.valid?
-    assert_includes recording.errors[:parent_recording_id].join, "is not allowed"
+    error = assert_raises(RecordingStudio::InvalidParent) do
+      record_child(Page.new(title: unique_name("Nested Page")), root_recording, page_recording)
+    end
+    assert_equal "Page cannot be recorded under Page", error.message
   end
 
   private

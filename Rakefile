@@ -16,37 +16,32 @@ ROOT_TEST_EXCLUSIONS = %w[
   test/recording_studio_v3_test.rb
   test/rename_verification_test.rb
 ].freeze
+DUMMY_BUNDLE_CLEARED_ENV = {
+  "BUNDLE_APP_CONFIG" => nil,
+  "BUNDLE_BIN_PATH" => nil,
+  "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
+  "BUNDLE_LOCKFILE" => nil,
+  "BUNDLE_PATH" => nil,
+  "BUNDLER_SETUP" => nil,
+  "BUNDLER_VERSION" => nil,
+  "RUBYLIB" => nil,
+  "RUBYOPT" => nil
+}.freeze
 
 def run_command!(env, *command)
-  return if system(env, *command)
+  return if Bundler.with_unbundled_env { system(env, *command) }
 
   raise "Command failed (#{Process.last_status.exitstatus}): #{command.join(' ')}"
 end
 
 def dummy_bundle_env
-  dummy_bundle_base_env.merge(dummy_bundle_cleared_env)
+  dummy_bundle_base_env.merge(DUMMY_BUNDLE_CLEARED_ENV)
 end
 
 def dummy_bundle_base_env
   {
-    "BUNDLE_APP_CONFIG" => ENV.fetch("BUNDLE_APP_CONFIG", nil),
     "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
-    "BUNDLE_PATH" => ENV.fetch("BUNDLE_PATH", nil),
-    "DISABLE_SIMPLECOV" => "true",
-    "GEM_HOME" => ENV.fetch("BUNDLER_ORIG_GEM_HOME", ENV.fetch("GEM_HOME", nil)),
-    "GEM_PATH" => ENV.fetch("BUNDLER_ORIG_GEM_PATH", nil)
-  }
-end
-
-def dummy_bundle_cleared_env
-  {
-    "BUNDLE_BIN_PATH" => nil,
-    "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
-    "BUNDLE_LOCKFILE" => nil,
-    "BUNDLER_SETUP" => nil,
-    "BUNDLER_VERSION" => nil,
-    "RUBYLIB" => nil,
-    "RUBYOPT" => nil
+    "DISABLE_SIMPLECOV" => "true"
   }
 end
 
@@ -72,8 +67,8 @@ namespace :test do
     Dir.chdir(DUMMY_APP_ROOT) do
       env = dummy_bundle_env
 
-      run_command!(env, "bin/rails", "db:prepare")
-      run_command!(env, "bin/rails", "test")
+      run_command!(env, "bundle", "exec", "bin/rails", "db:prepare")
+      run_command!(env, "bundle", "exec", "bin/rails", "test")
       DUMMY_TEST_FILES.each do |test_file|
         run_command!(env, "bundle", "exec", "ruby", "-I#{TEST_ROOT}", test_file)
       end
