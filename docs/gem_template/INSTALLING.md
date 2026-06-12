@@ -203,33 +203,11 @@ Child recordings must be created with an explicit `parent_recording`.
 
 ---
 
-## Overriding Engine Views
+## Demo Surface
 
-To customize engine views, copy them to your app:
+The engine does not ship a browser landing page. Use the dummy app home page as the template demo surface when you want a visible example of the addon experience.
 
-```bash
-mkdir -p app/views/gem_template/home
-cp $(bundle show gem_template)/app/views/gem_template/home/index.html.erb \
-   app/views/gem_template/home/
-```
-
-Rails will use your app's version instead of the engine's.
-
----
-
-## Overriding Engine Controllers
-
-Create a decorator or subclass:
-
-```ruby
-# app/controllers/gem_template/home_controller.rb
-class GemTemplate::HomeController < GemTemplate::ApplicationController
-  def index
-    # Your custom logic
-    super
-  end
-end
-```
+If you want a branded landing page in a host app, create one in your application and route to it separately from the mounted engine.
 
 ---
 

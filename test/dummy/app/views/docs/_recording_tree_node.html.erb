@@ -1,9 +1,9 @@
-<li>
-  <span><%= node[:label] %></span>
-
-  <% if node[:children].any? %>
-    <ul class="mt-2 list-disc pl-5">
-      <%= render partial: "recording_tree_node", collection: node[:children], as: :node %>
-    </ul>
+<% if node[:children].any? %>
+  <% parent_builder.node(label: node[:label], expanded: true) do |branch| %>
+    <% node[:children].each do |child_node| %>
+      <%= render partial: "recording_tree_node", locals: { parent_builder: branch, node: child_node } %>
+    <% end %>
   <% end %>
-</li>
+<% else %>
+  <% parent_builder.node(label: node[:label]) %>
+<% end %>

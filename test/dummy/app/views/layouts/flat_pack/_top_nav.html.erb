@@ -21,10 +21,14 @@
 
   <% nav.right do %>
     <% if user_signed_in? %>
-      <%= render FlatPack::Avatar::Component.new(
-        name: current_user.try(:name).presence || current_user.email,
-        size: :sm
-      ) %>
+      <div class="flex items-center gap-3">
+        <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
+
+        <%= render FlatPack::Avatar::Component.new(
+          name: current_user.try(:name).presence || current_user.email,
+          size: :sm
+        ) %>
+      </div>
     <% end %>
   <% end %>
 <% end %>

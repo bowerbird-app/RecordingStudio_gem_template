@@ -88,7 +88,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Page: API"
     refute_includes response.body, "Access boundary"
     refute_includes response.body, "Access: Admin"
-    assert_select "ul.list-disc", minimum: 2
+    assert_select "div[role='tree']", count: 1
+    assert_select "[role='treeitem']", minimum: 3
     refute_includes response.body, "Current structure"
     refute_includes response.body, "This tree is generated from RecordingStudio::Recording records"
   end
@@ -97,7 +98,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     get docs_gem_views_path
     assert_response :success
     assert_select "h1", text: "Gem Views"
-    assert_includes response.body, "app/views/gem_template/home/index.html.erb"
+    assert_select "table", minimum: 1
+    refute_includes response.body, "app/views/gem_template/home/index.html.erb"
   end
 
   test "methods page renders successfully" do

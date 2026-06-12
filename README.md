@@ -131,7 +131,7 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
 | RecordingStudio | v3.0.0 (pinned to `recording_studio/v3.0.0` in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.33 (pinned in `test/dummy/Gemfile`) |
+| FlatPack        | v0.1.84 (pinned in `test/dummy/Gemfile`) |
 | Devise          | latest  |
 
 ## Documentation
