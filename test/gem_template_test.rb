@@ -40,11 +40,13 @@ class GemTemplateTest < Minitest::Test
     refute_includes tailwind_source, "--color-fp-primary"
   end
 
-  def test_recording_studio_capabilities_are_off_by_default
+  def test_recording_studio_keeps_strict_recordable_declarations_enabled
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
 
-    assert_includes initializer_source, "Built-in capabilities remain disabled"
+    assert_includes initializer_source, "config.require_recordable_declarations = true"
+    assert_includes initializer_source, "config.recordable_types = [ \"Workspace\", \"Folder\", \"Page\" ]"
+    refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
   end
 
@@ -61,9 +63,10 @@ class GemTemplateTest < Minitest::Test
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, 'title: "Demo"'
-    assert_includes view_source, 'subtitle: "Provide a simple demo below"'
-    refute_includes view_source, "Template workflow"
+    assert_includes view_source, 'title: "Template Demo"'
+    assert_includes view_source, 'subtitle: "This dummy app is the browser-facing demo surface for the template."'
+    assert_includes view_source, "FlatPack::Card::Component"
+    refute_includes view_source, 'title: "Demo"'
   end
 
   def test_dummy_docs_pages_use_minimal_flatpack_documentation_components
@@ -84,13 +87,14 @@ class GemTemplateTest < Minitest::Test
     assert_includes methods_view, "FlatPack::CodeBlock::Component"
 
     gem_views_view = File.read(File.expand_path("dummy/app/views/docs/gem_views.html.erb", __dir__))
-    assert_includes gem_views_view, "FlatPack::List::Component"
+    assert_includes gem_views_view, "FlatPack::Table::Component"
+    refute_includes gem_views_view, "FlatPack::List::Component"
 
     recordable_types_view = File.read(File.expand_path("dummy/app/views/docs/recordable_types.html.erb", __dir__))
     assert_includes recordable_types_view, "FlatPack::List::Component"
 
     recordings_tree_view = File.read(File.expand_path("dummy/app/views/docs/recordings_tree.html.erb", __dir__))
-    assert_includes recordings_tree_view, '<ul class="list-disc'
+    assert_includes recordings_tree_view, "FlatPack::Tree::Component"
     refute_includes recordings_tree_view, "Current structure"
     refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
   end
@@ -99,9 +103,9 @@ class GemTemplateTest < Minitest::Test
     recordings_tree_view = File.read(File.expand_path("dummy/app/views/docs/recordings_tree.html.erb", __dir__))
 
     assert_includes recordings_tree_view, 'title: "Recordings tree"'
-    assert_includes recordings_tree_view, '<ul class="list-disc'
+    assert_includes recordings_tree_view, "FlatPack::Tree::Component"
     recording_tree_partial = File.read(File.expand_path("dummy/app/views/docs/_recording_tree_node.html.erb", __dir__))
-    assert_includes recording_tree_partial, "<li>"
+    assert_includes recording_tree_partial, "parent_builder.node"
     refute_includes recordings_tree_view, "Current structure"
     refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
   end
@@ -138,13 +142,9 @@ class GemTemplateTest < Minitest::Test
     assert_includes top_nav_source, 'aria-hidden="true"'
   end
 
-  def test_engine_home_page_uses_flatpack_components
+  def test_engine_does_not_ship_a_home_view
     view_path = File.expand_path("../app/views/gem_template/home/index.html.erb", __dir__)
-    view_source = File.read(view_path)
 
-    assert_includes view_source, "FlatPack::PageTitle::Component"
-    assert_includes view_source, "FlatPack::Card::Component"
-    assert_includes view_source, "FlatPack::Button::Component"
-    assert_includes view_source, "FlatPack::Badge::Component"
+    refute File.exist?(view_path)
   end
 end

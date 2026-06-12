@@ -194,35 +194,20 @@ redirect_to gem_template.root_path
 
 The `gem_template` helper provides access to all engine routes.
 
----
+## RecordingStudio v3 Host-App Check
 
-## Overriding Engine Views
-
-To customize engine views, copy them to your app:
-
-```bash
-mkdir -p app/views/gem_template/home
-cp $(bundle show gem_template)/app/views/gem_template/home/index.html.erb \
-   app/views/gem_template/home/
-```
-
-Rails will use your app's version instead of the engine's.
+This template's dummy app uses RecordingStudio `recording_studio/v3.0.0`. Keep
+`config.require_recordable_declarations = true`, declare every configured recordable with
+`recording_studio_recordable(...)`, and create roots with `RecordingStudio.root_recording_for(recordable)`.
+Child recordings must be created with an explicit `parent_recording`.
 
 ---
 
-## Overriding Engine Controllers
+## Demo Surface
 
-Create a decorator or subclass:
+The engine does not ship a browser landing page. Use the dummy app home page as the template demo surface when you want a visible example of the addon experience.
 
-```ruby
-# app/controllers/gem_template/home_controller.rb
-class GemTemplate::HomeController < GemTemplate::ApplicationController
-  def index
-    # Your custom logic
-    super
-  end
-end
-```
+If you want a branded landing page in a host app, create one in your application and route to it separately from the mounted engine.
 
 ---
 

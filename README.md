@@ -55,8 +55,8 @@ This template follows RecordingStudio's root recording pattern:
 
 - **Workspace** is the top-level recordable
 - **Folder** and **Page** demonstrate nested recordables under the workspace root
+- Each configured recordable declares `recording_studio_recordable(...)`; strict declaration validation stays enabled
 - A root `RecordingStudio::Recording` wraps the Workspace
-- The admin user has root-level admin access via `RecordingStudio::Access`
 - `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
 
 ### Extending RecordingStudio
@@ -70,46 +70,37 @@ To add new recordable types:
      config.recordable_types = ["Workspace", "YourNewType"]
    end
    ```
-3. Leave optional behavior off by default, then opt into capabilities on the specific recordable models that need them:
+3. Declare whether the model can be a root and which parents may contain it:
    ```ruby
    class YourNewType < ApplicationRecord
-     include RecordingStudio::Capabilities::Movable.to("Workspace")
-     include RecordingStudio::Capabilities::Copyable.to("Workspace")
+     recording_studio_recordable label: "Your new type",
+                                 root: false,
+                                 allowed_parent_types: ["Workspace", "Folder"]
    end
    ```
-4. If you want per-device root persistence, wire it explicitly in your controller layer:
+4. Validate declarations and create recordings under the root:
    ```ruby
-   class ApplicationController < ActionController::Base
-     include RecordingStudio::Concerns::DeviceSessionConcern
-   end
-   ```
-5. Create recordings under the root:
-   ```ruby
+   RecordingStudio.validate_recordable_declarations!
+   root_recording = RecordingStudio.root_recording_for(workspace)
    root_recording.record(YourNewType) do |record|
      record.title = "Example"
    end
    ```
 
-### Capabilities
+### RecordingStudio v3 Declarations
 
-This template uses the current RecordingStudio approach: built-in capabilities are off by default and are enabled per recordable type by including the relevant module on the model.
+RecordingStudio v3 expects every configured ActiveRecord recordable type to declare its hierarchy rules:
 
-- `movable`
-- `copyable`
+- `Workspace` declares `root: true`
+- `Folder` and `Page` declare `root: false, allowed_parent_types: ["Workspace", "Folder"]`
+- `config.require_recordable_declarations = true` remains enabled in the dummy app initializer
 
-Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
-
-Enable behavior intentionally where it belongs:
+Useful console checks:
 
 ```ruby
-class RecordingStudioPage < ApplicationRecord
-  include RecordingStudio::Capabilities::Movable.to("Workspace")
-  include RecordingStudio::Capabilities::Copyable.to("Workspace")
-end
-
-class ApplicationController < ActionController::Base
-  include RecordingStudio::Concerns::DeviceSessionConcern
-end
+RecordingStudio.validate_recordable_declarations!
+RecordingStudio.root_recordable_types
+RecordingStudio.allowed_parent_types_for("Page")
 ```
 
 ### FlatPack UI Components
@@ -139,8 +130,8 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
-| RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.33 (pinned in `test/dummy/Gemfile`) |
+| RecordingStudio | v3.0.0 (pinned to `recording_studio/v3.0.0` in `test/dummy/Gemfile`) |
+| FlatPack        | v0.1.84 (pinned in `test/dummy/Gemfile`) |
 | Devise          | latest  |
 
 ## Documentation

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_05_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -25,34 +25,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_000001) do
     t.datetime "created_at", null: false
     t.string "title"
     t.datetime "updated_at", null: false
-  end
-
-  create_table "recording_studio_access_boundaries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "minimum_role"
-  end
-
-  create_table "recording_studio_accesses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "actor_id", null: false
-    t.string "actor_type", null: false
-    t.datetime "created_at", null: false
-    t.integer "role", default: 0, null: false
-    t.index ["actor_type", "actor_id", "role"], name: "index_recording_studio_accesses_on_actor_and_role"
-    t.index ["actor_type", "actor_id"], name: "index_recording_studio_accesses_on_actor"
-  end
-
-  create_table "recording_studio_device_sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "actor_id", null: false
-    t.string "actor_type", null: false
-    t.datetime "created_at", null: false
-    t.string "device_fingerprint", null: false
-    t.string "device_name"
-    t.datetime "last_active_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.uuid "root_recording_id", null: false
-    t.datetime "updated_at", null: false
-    t.string "user_agent"
-    t.index ["actor_type", "actor_id", "device_fingerprint"], name: "index_rs_device_sessions_on_actor_and_fingerprint", unique: true
-    t.index ["root_recording_id"], name: "index_rs_device_sessions_on_root_recording"
   end
 
   create_table "recording_studio_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -83,11 +55,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_000001) do
     t.datetime "trashed_at"
     t.datetime "updated_at", null: false
     t.index ["parent_recording_id"], name: "index_recording_studio_recordings_on_parent_recording_id"
-    t.index ["parent_recording_id"], name: "index_rs_unique_active_access_boundary_per_parent", unique: true, where: "(((recordable_type)::text = 'RecordingStudio::AccessBoundary'::text) AND (trashed_at IS NULL))"
-    t.index ["recordable_id", "root_recording_id"], name: "idx_rs_recordings_root_access", where: "(((recordable_type)::text = 'RecordingStudio::Access'::text) AND (parent_recording_id IS NOT NULL) AND (trashed_at IS NULL))"
     t.index ["recordable_type", "recordable_id", "parent_recording_id", "trashed_at"], name: "index_recording_studio_recordings_on_recordable_parent_trashed"
     t.index ["recordable_type", "recordable_id"], name: "index_recording_studio_recordings_on_recordable"
     t.index ["root_recording_id"], name: "index_rs_recordings_on_root_recording"
+  end
+
+  create_table "recording_studio_root_switchable_selections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "actor_id"
+    t.string "actor_type"
+    t.datetime "created_at", null: false
+    t.string "device_browser"
+    t.string "device_key", null: false
+    t.string "device_label"
+    t.string "device_platform"
+    t.string "device_type"
+    t.datetime "last_used_at", null: false
+    t.uuid "root_recording_id", null: false
+    t.string "scope_key", null: false
+    t.datetime "updated_at", null: false
+    t.text "user_agent"
+    t.index ["actor_type", "actor_id", "device_key", "scope_key"], name: "idx_rs_root_switchable_actor_device_scope", unique: true, where: "(actor_id IS NOT NULL)"
+    t.index ["device_key", "scope_key"], name: "idx_rs_root_switchable_anonymous_device_scope", unique: true, where: "(actor_id IS NULL)"
+    t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -108,7 +97,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_000001) do
     t.datetime "updated_at", null: false
   end
 
-  add_foreign_key "recording_studio_device_sessions", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
