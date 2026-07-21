@@ -1,16 +1,52 @@
 name: CI
 
 on:
-  push:
   pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Prepare RuboCop cache
+        uses: actions/cache@v4
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '.rubocop.yml', 'Gemfile.lock') }}
+        with:
+          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
+
+      - name: Lint Ruby
+        run: bundle exec rubocop --format github
+
   test:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-    
+    timeout-minutes: 30
+
     services:
       postgres:
         image: postgres:16
@@ -29,42 +65,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: ['3.3']
-    
+        ruby-version: ["3.3", "3.4"]
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Ruby ${{ matrix.ruby-version }}
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby-version }}
-        bundler-cache: true
-      env:
-        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
-    
-    - name: Install dummy app dependencies
-      run: bundle install
-      working-directory: test/dummy
-      env:
-        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/gem_template_test
-    
-    - name: Run database migrations
-      run: bundle exec rake db:migrate RAILS_ENV=test
-      working-directory: test/dummy
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/gem_template_test
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-    - name: Build dummy app Tailwind assets
-      run: bundle exec rails tailwindcss:build
-      working-directory: test/dummy
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/gem_template_test
+      - name: Set up Ruby ${{ matrix.ruby-version }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+          cache-version: ${{ hashFiles('test/dummy/Gemfile.lock') }}
 
-    - name: Run RuboCop
-      run: bundle exec rubocop
+      - name: Install dummy app dependencies
+        run: bundle install
+        working-directory: test/dummy
+        env:
+          BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
 
-    - name: Run tests
-      run: bundle exec rake test:all
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/gem_template_test
+      - name: Build dummy app Tailwind assets
+        run: bundle exec rails tailwindcss:build
+        working-directory: test/dummy
+
+      - name: Run tests
+        run: bundle exec rake test:all
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/gem_template_test
