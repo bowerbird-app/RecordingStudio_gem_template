@@ -144,22 +144,18 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     {
       workspace: recordable_type_summary(
         workspace_recordings_before + 3,
-        workspaces_before + 3,
-        "recordings",
-        "recordables"
+        workspaces_before + 3
       ),
       folder: recordable_type_summary(
         folder_recordings_before + 1,
-        folders_before + 1,
-        "recording",
-        "recordable"
+        folders_before + 1
       )
     }
   end
 
-  def recordable_type_summary(recording_count, recordable_count, recording_label, recordable_label)
-    "#{recording_count} #{recording_label} point to this type " \
-      "• #{recordable_count} #{recordable_label} in the database"
+  def recordable_type_summary(recording_count, recordable_count)
+    "#{ActionController::Base.helpers.pluralize(recording_count, 'recording')} point to this type " \
+      "• #{ActionController::Base.helpers.pluralize(recordable_count, 'recordable')} in the database"
   end
 
   def record_child(recordable, root_recording, parent_recording)
