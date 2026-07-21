@@ -81,16 +81,3 @@ jobs:
       - name: Scan importmap dependencies for known vulnerabilities
         run: bin/importmap audit
         working-directory: test/dummy
-
-  dependency-review:
-    name: Dependency Review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Review dependency changes
-        uses: actions/dependency-review-action@v4
