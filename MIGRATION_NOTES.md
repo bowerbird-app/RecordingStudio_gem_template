@@ -1,49 +1,35 @@
 # Migration Notes - Private Gems to Public Gems
 
-## Changes Made
+## Completed Changes
 
-1. ✅ Removed repository access entries from `.devcontainer/devcontainer.json`
-2. ✅ Updated documentation in `CODESPACES.md` and `PRIVATE_GEMS.md`
-3. ✅ Updated copilot instructions to reference local docs
-4. ✅ Replaced `makeup_artist` with `flat_pack` in `test/dummy/Gemfile`
+1. Removed repository access entries from `.devcontainer/devcontainer.json`.
+2. Updated `docs/gem_template/CODESPACES.md` and `docs/gem_template/PRIVATE_GEMS.md` for public dependencies.
+3. Replaced MakeupArtist with FlatPack in the dummy app dependency, views, layouts, and Tailwind sources.
+4. Pinned the dummy app to FlatPack `v0.1.129` in `test/dummy/Gemfile` and its lockfile.
+5. Regenerated the dummy app bundle and completed the FlatPack installation work.
 
-## Next Steps (Requires Ruby 3.3.0+)
+## Current Requirements
 
-The following steps need to be completed in an environment with Ruby 3.3.0 or higher:
+- Ruby 3.3 or newer
+- Rails 8.1 or newer
+- Public RubyGems and GitHub access for dependency installation
+- No private gem credentials for the template dependencies
 
-1. **Update Gemfile.lock**: Run `bundle install` in the test/dummy directory to update the lockfile
-   ```bash
-   cd test/dummy
-   bundle install
-   ```
+## Verification
 
-2. **Run FlatPack installer**: After bundle install, run the FlatPack installation generator
-   ```bash
-   cd test/dummy
-   rails generate flat_pack:install
-   ```
+Install both bundles and run the complete gem and dummy app test path:
 
-3. **Update views**: Replace any `makeup_artist` component references with `flat_pack` components
-   - Search for: `MakeupArtist::`, `makeup_artist/`
-   - Replace with equivalent FlatPack components
+```bash
+bundle install
+BUNDLE_GEMFILE=test/dummy/Gemfile bundle install
+bundle exec rake test:all
+```
 
-4. **Test the application**: Start the dummy app and verify all UI components work
-   ```bash
-   cd test/dummy
-   bin/dev
-   ```
+Run the dummy app from its directory for browser verification:
 
-5. **Run tests**: Execute the test suite
-   ```bash
-   bundle exec rake test
-   ```
+```bash
+cd test/dummy
+bin/dev
+```
 
-## Component Migration Guide
-
-FlatPack is the successor to MakeupArtist with similar components:
-
-- Both use ViewComponent architecture
-- Both integrate with Tailwind CSS
-- Component names and APIs may differ slightly
-
-See: https://github.com/bowerbird-app/flatpack for component documentation
+Use the [FlatPack repository](https://github.com/bowerbird-app/flatpack) and the live FlatPack demo linked from the top-level README for current component documentation.
