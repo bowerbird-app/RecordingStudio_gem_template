@@ -3,8 +3,8 @@
 require "test_helper"
 
 class GemTemplateTest < Minitest::Test
-  def test_version_exists
-    refute_nil ::GemTemplate::VERSION
+  def test_version_matches_release
+    assert_equal "0.1.2", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
