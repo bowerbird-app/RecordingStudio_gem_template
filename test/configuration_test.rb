@@ -42,7 +42,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal "env-token", configuration.api_key
     assert_equal false, configuration.enable_feature_x
     assert_equal 5, configuration.timeout
-    assert_instance_of GemTemplate::Hooks, configuration.hooks
+    assert_instance_of RecordingStudio::Hooks, configuration.hooks
   ensure
     ENV["GEM_TEMPLATE_API_KEY"] = previous_value
   end

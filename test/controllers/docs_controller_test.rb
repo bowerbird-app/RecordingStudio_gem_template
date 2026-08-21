@@ -50,7 +50,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Recordable types"
     assert_includes(
       response.body,
-      "The list below comes from RecordingStudio.recordable_declarations and v3 parent/root introspection."
+      "The list below comes from RecordingStudio.recordable_declarations and parent/root introspection."
     )
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
@@ -113,15 +113,13 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Provide one section title and codeblock for each method"
   end
 
-  test "sidebar includes documentation links" do
+  test "authenticated docs pages use the recording studio default layout" do
     get docs_install_path
 
-    assert_select %(a[href="#{docs_install_path}"]), text: /Install/
-    assert_select %(a[href="#{docs_config_path}"]), text: /Config/
-    assert_select %(a[href="#{docs_recordable_types_path}"]), text: /Recordable types/
-    assert_select %(a[href="#{docs_recordings_tree_path}"]), text: /Recordings tree/
-    assert_select %(a[href="#{docs_gem_views_path}"]), text: /Gem Views/
-    assert_select %(a[href="#{docs_methods_path}"]), text: /Methods/
+    assert_response :success
+    assert_select "body[data-recording-studio-default-layout='true']", count: 1
+    assert_select "nav[aria-label='Page navigation']", count: 1
+    refute_includes response.body, "flat-pack-sidebar-layout"
   end
 
   private

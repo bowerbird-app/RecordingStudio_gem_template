@@ -4,28 +4,70 @@ require "test_helper"
 
 class GemTemplateTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.1.2", ::GemTemplate::VERSION
+    assert_equal "0.2.0", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
     assert_kind_of Class, ::GemTemplate::Engine
   end
 
-  def test_dummy_app_uses_flatpack_sidebar_layout
-    layout_path = File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__)
-    assert File.exist?(layout_path)
+  def test_gemspec_pins_recording_studio_4_1
+    gemspec = File.read(File.expand_path("../gem_template.gemspec", __dir__))
 
-    application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
-    controller_source = File.read(application_controller_path)
-    assert_includes controller_source, "flat_pack_sidebar"
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.1"'
   end
 
-  def test_dummy_layouts_default_to_flatpack_rounded_theme
+  def test_dummy_gemfile_pins_verified_4x_github_tags
+    gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.6.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.133"'
+    refute_includes gemfile, "recording_studio/v3.0.0"
+    refute_includes gemfile, 'tag: "v0.1.134"'
+    refute_includes gemfile, 'tag: "0.3.1"'
+  end
+
+  def test_template_does_not_ship_copied_core_hooks_or_base_service
+    refute File.exist?(File.expand_path("../lib/gem_template/hooks.rb", __dir__))
+    refute File.exist?(File.expand_path("../lib/gem_template/services/base_service.rb", __dir__))
+    refute File.exist?(File.expand_path("../lib/gem_template/services/example_service.rb", __dir__))
+  end
+
+  def test_example_capability_wraps_include_for_and_is_not_enabled_globally
+    source = File.read(File.expand_path("../lib/gem_template/capabilities/example.rb", __dir__))
+
+    assert_includes source, "def self.to(**)"
+    assert_includes source, "RecordingStudio::Capabilities.include_for(:example, **)"
+    refute_includes source, "enable_capability"
+    refute_includes source, "set_capability_options"
+    refute RecordingStudio.capability_enabled?(:example, for: "Folder")
+    refute RecordingStudio.capability_enabled?(:example, for: "Page")
+    assert_empty RecordingStudio.configuration.enabled_recordable_types_for(:example)
+  end
+
+  def test_dummy_app_uses_recording_studio_default_layout
+    application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
+    controller_source = File.read(application_controller_path)
+
+    assert_includes controller_source, "include RecordingStudio::UsesDefaultLayout"
+    assert_includes controller_source, '"recording_studio/default_layout"'
+    assert_includes controller_source, "devise_controller? ? \"application\""
+    refute_includes controller_source, "flat_pack_sidebar"
+    refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
+    refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
+  end
+
+  def test_dummy_login_layout_keeps_flatpack_assets_without_tight_main_offset
     application_layout = File.read(File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__))
-    sidebar_layout = File.read(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
 
     assert_includes application_layout, '<html data-theme="rounded">'
-    assert_includes sidebar_layout, '<html data-theme="rounded" class="h-full overflow-hidden overscroll-none">'
+    assert_includes application_layout, 'stylesheet_link_tag "flat_pack/variables"'
+    assert_includes application_layout, "javascript_importmap_tags"
+    assert_includes application_layout, "min-h-screen"
+    refute_includes application_layout, "mt-28"
+    refute_includes application_layout, "flat_pack_sidebar"
   end
 
   def test_dummy_tailwind_keeps_flatpack_theme_selection_in_flatpack
@@ -48,6 +90,7 @@ class GemTemplateTest < Minitest::Test
     assert_includes initializer_source, "config.recordable_types = [ \"Workspace\", \"Folder\", \"Page\" ]"
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
+    refute_includes initializer_source, "v3"
   end
 
   def test_dummy_readme_explains_dummy_app_purpose
@@ -57,6 +100,19 @@ class GemTemplateTest < Minitest::Test
     assert_includes readme_source, "This Rails app exists to validate the Recording Studio addon template"
     assert_includes readme_source, "/recording_studio"
     assert_includes readme_source, "redirects to `/`"
+    refute_includes readme_source, "flat_pack_sidebar"
+  end
+
+  def test_product_readme_is_the_template_guide
+    readme = File.read(File.expand_path("../README.md", __dir__))
+
+    assert_includes readme, "RecordingStudio"
+    assert_includes readme, "v4.2.0"
+    assert_includes readme, "v0.1.133"
+    refute_includes readme, "v3 declarations"
+    refute_includes readme, "RecordingStudio v3"
+    refute_includes readme, "ExampleService"
+    refute_includes readme, "recording_studio/v3.0.0"
   end
 
   def test_dummy_home_page_uses_demo_title_only
@@ -66,7 +122,9 @@ class GemTemplateTest < Minitest::Test
     assert_includes view_source, 'title: "Template Demo"'
     assert_includes view_source, 'subtitle: "This dummy app is the browser-facing demo surface for the template."'
     assert_includes view_source, "FlatPack::Card::Component"
+    assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, 'title: "Demo"'
+    refute_includes view_source, "FlatPack::Breadcrumb::Component"
   end
 
   def test_dummy_docs_pages_use_minimal_flatpack_documentation_components
@@ -78,8 +136,10 @@ class GemTemplateTest < Minitest::Test
     docs_view_paths.each do |view_path|
       view_source = File.read(view_path)
 
+      assert_includes view_source, "dummy_page_nav"
       assert_includes view_source, "FlatPack::PageTitle::Component"
       refute_includes view_source, "FlatPack::Card::Component"
+      refute_includes view_source, "FlatPack::Breadcrumb::Component"
     end
 
     methods_view = File.read(File.expand_path("dummy/app/views/docs/methods.html.erb", __dir__))
@@ -92,6 +152,7 @@ class GemTemplateTest < Minitest::Test
 
     recordable_types_view = File.read(File.expand_path("dummy/app/views/docs/recordable_types.html.erb", __dir__))
     assert_includes recordable_types_view, "FlatPack::List::Component"
+    refute_includes recordable_types_view, "v3 parent/root"
 
     recordings_tree_view = File.read(File.expand_path("dummy/app/views/docs/recordings_tree.html.erb", __dir__))
     assert_includes recordings_tree_view, "FlatPack::Tree::Component"
@@ -108,38 +169,6 @@ class GemTemplateTest < Minitest::Test
     assert_includes recording_tree_partial, "parent_builder.node"
     refute_includes recordings_tree_view, "Current structure"
     refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
-  end
-
-  def test_dummy_sidebar_includes_recordings_tree_navigation
-    sidebar_path = File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__)
-    sidebar_source = File.read(sidebar_path)
-
-    assert_includes sidebar_source, 'label: "Recordable types"'
-    assert_includes sidebar_source, "docs_recordable_types_path"
-    assert_includes sidebar_source, 'label: "Recordings tree"'
-    assert_includes sidebar_source, "docs_recordings_tree_path"
-    refute_includes sidebar_source, 'label: "Recording Studio"'
-    refute_includes sidebar_source, 'href: "/recording_studio"'
-  end
-
-  def test_dummy_sidebar_uses_supported_icons_for_install_and_methods
-    sidebar_path = File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__)
-    sidebar_source = File.read(sidebar_path)
-
-    assert_includes sidebar_source, 'label: "Install"'
-    assert_includes sidebar_source, "icon: :arrow_down_tray"
-    assert_includes sidebar_source, 'label: "Methods"'
-    assert_includes sidebar_source, "icon: :code_bracket"
-    refute_includes sidebar_source, "icon: :download"
-    refute_includes sidebar_source, "icon: :code\n"
-  end
-
-  def test_dummy_top_nav_uses_center_slot_to_keep_avatar_right_aligned
-    top_nav_path = File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__)
-    top_nav_source = File.read(top_nav_path)
-
-    assert_includes top_nav_source, "nav.center"
-    assert_includes top_nav_source, 'aria-hidden="true"'
   end
 
   def test_engine_does_not_ship_a_home_view

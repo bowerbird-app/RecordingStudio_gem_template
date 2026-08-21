@@ -6,14 +6,25 @@ module GemTemplate
 
     class << self
       def apply_model_extensions(target)
-        apply_extensions(target, GemTemplate.configuration.hooks.model_extensions_for(extension_keys_for(target)))
+        apply_extensions(target, extensions_for(:model, extension_keys_for(target)))
       end
 
       def apply_controller_extensions(target)
-        apply_extensions(target, GemTemplate.configuration.hooks.controller_extensions_for(extension_keys_for(target)))
+        apply_extensions(target, extensions_for(:controller, extension_keys_for(target)))
       end
 
       private
+
+      def extensions_for(kind, names)
+        hooks = GemTemplate.configuration.hooks
+        Array(names).flat_map do |name|
+          if kind == :model
+            hooks.model_extensions_for(name)
+          else
+            hooks.controller_extensions_for(name)
+          end
+        end
+      end
 
       def apply_extensions(target, extensions)
         return unless target
@@ -42,7 +53,7 @@ module GemTemplate
 
     # Run before_initialize hooks
     initializer "gem_template.before_initialize", before: "gem_template.load_config" do |_app|
-      GemTemplate::Hooks.run(:before_initialize, self)
+      GemTemplate.configuration.hooks.run(:before_initialize, self)
     end
 
     initializer "gem_template.load_config" do |app|
@@ -78,12 +89,12 @@ module GemTemplate
       end
 
       # Run on_configuration hooks after config is loaded
-      GemTemplate::Hooks.run(:on_configuration, GemTemplate.configuration)
+      GemTemplate.configuration.hooks.run(:on_configuration, GemTemplate.configuration)
     end
 
     # Run after_initialize hooks
     initializer "gem_template.after_initialize", after: "gem_template.load_config" do |_app|
-      GemTemplate::Hooks.run(:after_initialize, self)
+      GemTemplate.configuration.hooks.run(:after_initialize, self)
     end
 
     # Apply model extensions when models are loaded

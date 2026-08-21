@@ -6,8 +6,8 @@ require_relative "dummy/config/environment"
 
 require "rails/test_help"
 
-class RecordingStudioV3Test < ActiveSupport::TestCase
-  test "dummy recordable declarations validate and expose v3 introspection" do
+class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
+  test "dummy recordable declarations validate and expose parent/root introspection" do
     assert RecordingStudio.validate_recordable_declarations!
     assert_equal ["Workspace"], RecordingStudio.root_recordable_types
     assert_equal %w[Workspace Folder], RecordingStudio.allowed_parent_types_for("Folder")
@@ -80,6 +80,17 @@ class RecordingStudioV3Test < ActiveSupport::TestCase
       record_child(Page.new(title: unique_name("Nested Page")), root_recording, page_recording)
     end
     assert_equal "Page cannot be recorded under Page", error.message
+  end
+
+  test "accessible is enabled on workspace and example mixin stays opt-in" do
+    assert RecordingStudio.capability_enabled?(:accessible, for: "Workspace")
+    refute RecordingStudio.capability_enabled?(:accessible, for: "Folder")
+    refute RecordingStudio.capability_enabled?(:accessible, for: "Page")
+
+    assert RecordingStudio.capability_enabled?(:example, for: "Workspace")
+    refute RecordingStudio.capability_enabled?(:example, for: "Folder")
+    refute RecordingStudio.capability_enabled?(:example, for: "Page")
+    assert_equal({ label: "dummy workspace" }, RecordingStudio.capability_options(:example, for: "Workspace"))
   end
 
   private
