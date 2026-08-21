@@ -7,3 +7,4 @@ Copied addons now start on Recording Studio 4.x.
 - Authenticated dummy layout: `RecordingStudio::UsesDefaultLayout` plus FlatPack CSS/JS
 - Hooks and BaseService come from core; do not copy them into a new addon
 - Recordable declarations remain required
+- Optional example mixin: `include RecordingStudio::Capabilities::Example.to(**opts)` wraps `RecordingStudio::Capabilities.include_for`. Installing the gem does not enable it globally.

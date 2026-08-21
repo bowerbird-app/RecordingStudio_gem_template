@@ -40,9 +40,11 @@ class GemTemplateTest < Minitest::Test
 
     assert_includes source, "def self.to(**)"
     assert_includes source, "RecordingStudio::Capabilities.include_for(:example, **)"
-    refute_includes source, "enable_capability(:example"
-    refute_includes source, "set_capability_options(:example"
+    refute_includes source, "enable_capability"
+    refute_includes source, "set_capability_options"
     refute RecordingStudio.capability_enabled?(:example, for: "Folder")
+    refute RecordingStudio.capability_enabled?(:example, for: "Page")
+    assert_empty RecordingStudio.configuration.enabled_recordable_types_for(:example)
   end
 
   def test_dummy_app_uses_recording_studio_default_layout
