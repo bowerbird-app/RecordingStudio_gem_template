@@ -1,16 +1,16 @@
 # GemTemplate
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+Internal template for building Rails engine addons on top of Recording Studio 4.x.
 
 ## What's Included
 
-- **RecordingStudio** gem installed and configured
+- **Recording Studio** 4.x gem pinned and configured
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
 - **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, mounted RecordingStudio routes, and FlatPack's built-in rounded theme enabled by default
+- **Dummy app** (`test/dummy/`) with a FlatPack sign-in screen, a home page on Recording Studio's default layout, mounted Recording Studio routes, and FlatPack's built-in rounded theme
 
-The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy. By default, that starter shell uses FlatPack's built-in rounded theme via the root layout attribute rather than custom Tailwind theme recreation.
+Authenticated dummy pages use Recording Studio's shared default layout (`RecordingStudio::UsesDefaultLayout`) plus FlatPack CSS and JS. Devise keeps its own sign-in layout. Dummy `/docs/*` pages stay in the dummy app as a host-app sandbox; they are not the product README.
 
 ## Quick Start
 
@@ -26,7 +26,7 @@ The dummy app ships with a starter sidebar documentation shell for authenticated
    ```
 4. Open port 3000 — you'll land on the dummy app home page and can sign in at `/users/sign_in`
 
-The dummy app is intended as a host-app validation surface for authentication, FlatPack rendering, Tailwind source scanning, and RecordingStudio route wiring.
+The dummy app is intended as a host-app validation surface for authentication, FlatPack rendering, Tailwind source scanning, and Recording Studio route wiring.
 
 ### Login Credentials
 
@@ -41,17 +41,16 @@ The login form is prefilled with these credentials for fast access.
 
 - `/` — dummy app home page
 - `/users/sign_in` — Devise sign-in page
-- `/recording_studio` — redirect to `/` while the mounted RecordingStudio engine remains data/API-focused
-- `/docs/install` — install guide rendered inside the dummy app
-- `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` — starter sidebar pages to customize for your gem
+- `/recording_studio` — redirect to `/` while the mounted Recording Studio engine remains data/API-focused
+- `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` — dummy-only starter pages
 
-The home page in `test/dummy/app/views/home/index.html.erb` is also a deliberate starting point. Keep it focused on a minimal demo of the gem's primary behavior; use the sidebar pages for deeper explanations and supporting reference material.
+The home page in `test/dummy/app/views/home/index.html.erb` is a starting point for a minimal demo of the gem's primary behavior. Keep deeper explanations on the dummy docs pages, not in this README.
 
 ## Architecture
 
 ### Root Recording Pattern
 
-This template follows RecordingStudio's root recording pattern:
+This template follows Recording Studio's root recording pattern:
 
 - **Workspace** is the top-level recordable
 - **Folder** and **Page** demonstrate nested recordables under the workspace root
@@ -59,7 +58,7 @@ This template follows RecordingStudio's root recording pattern:
 - A root `RecordingStudio::Recording` wraps the Workspace
 - `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
 
-### Extending RecordingStudio
+### Extending Recording Studio
 
 To add new recordable types:
 
@@ -87,9 +86,9 @@ To add new recordable types:
    end
    ```
 
-### RecordingStudio v3 Declarations
+### Recordable Declarations
 
-RecordingStudio v3 expects every configured ActiveRecord recordable type to declare its hierarchy rules:
+Every configured ActiveRecord recordable type must declare its hierarchy rules. Declarations are required; they are not version-specific.
 
 - `Workspace` declares `root: true`
 - `Folder` and `Page` declare `root: false, allowed_parent_types: ["Workspace", "Folder"]`
@@ -103,6 +102,26 @@ RecordingStudio.root_recordable_types
 RecordingStudio.allowed_parent_types_for("Page")
 ```
 
+### Capabilities
+
+Capability mixins are opt-in. Installing this gem does not enable mixins on host types.
+
+The dummy Workspace enables Accessible because that addon is bundled:
+
+```ruby
+RecordingStudio.enable_capability(:accessible, on: Workspace)
+```
+
+The template also ships one example mixin that uses core 4.2.0's `include_for` factory:
+
+```ruby
+include RecordingStudio::Capabilities::Example.to(label: "dummy workspace")
+```
+
+`.to` wraps `RecordingStudio::Capabilities.include_for`. It does not add a fourth verb and it does not call `enable_capability` / `set_capability_options` itself. Folder and Page stay without the example mixin.
+
+Use core `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService`. Do not copy those classes into a new addon.
+
 ### FlatPack UI Components
 
 All views use FlatPack ViewComponents. Available components include:
@@ -113,12 +132,10 @@ All views use FlatPack ViewComponents. Available components include:
 - `FlatPack::Badge::Component` — Status badges
 - `FlatPack::Table::Component` — Data tables
 - `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
-- `FlatPack::Navbar::Component` — Navigation sidebar
+- `FlatPack::PageNav::Component` — Default-layout page navigation
+- `FlatPack::PageTitle::Component` — Page titles
 
-Use the live FlatPack demo app at [flatpack-c6p8f.ondigitalocean.app](https://flatpack-c6p8f.ondigitalocean.app/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI, and user-provided FlatPack demo URLs should be treated as task context.
-
-In GitHub Codespaces or other restricted environments, you may need to enable access to that URL before the agent can inspect the app. If access is unavailable, provide sanitized screenshots, copied markup, or component details so the agent can stay aligned with the shared UI.
+Use the live FlatPack demo app at [flatpack.bowerbird.io](https://flatpack.bowerbird.io/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI.
 
 See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
 
@@ -130,10 +147,14 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
-| RecordingStudio | v3.0.0 (pinned to `recording_studio/v3.0.0` in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.129 (pinned in `test/dummy/Gemfile`) |
+| RecordingStudio | 4.x (`~> 4.1` in the gemspec; dummy GitHub tag `v4.2.0`) |
+| Accessible      | dummy GitHub tag `v0.6.0` |
+| Root Switchable | dummy GitHub tag `v0.5.0` |
+| FlatPack        | dummy GitHub tag `v0.1.133` |
 | Devise          | latest  |
+
+The dummy Gemfile keeps `github:` sources so Bundler can fetch those gems. The gemspec still pins `recording_studio` to `~> 4.1` so copied addons declare the core dependency even when GitHub is the fetch source.
 
 ## Documentation
 
-The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.
+The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; this README and the dummy app are the source of truth for the Recording Studio addon workflow.

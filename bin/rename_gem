@@ -40,6 +40,17 @@ class GemRenamer
     test/dummy/config/routes.rb
   ].freeze
 
+  # Product files that must lose leftover template identity after rename.
+  LEFTOVER_IDENTITY_FILES = %w[
+    README.md
+    CHANGELOG.md
+  ].freeze
+
+  LEFTOVER_HOMEPAGES = %w[
+    https://github.com/bowerbird-app/RecordingStudio_gem_template
+    https://github.com/bowerbird-app/gem_template
+  ].freeze
+
   def initialize(new_name, from: nil, dry_run: false)
     @root = File.expand_path("..", __dir__)
     @state_file_path = File.join(@root, STATE_FILE)
@@ -258,9 +269,26 @@ class GemRenamer
         EXCLUDED_FILES.any? { |name| f.end_with?(name) }
       end
 
-      # Only include files that actually contain the old name
-      files.select { |f| file_contains_old_name?(f) }.sort
+      identity_files = leftover_identity_file_paths
+      files.concat(identity_files)
+
+      # Only include files that actually contain the old name or leftover identity
+      files.uniq.select { |f| file_contains_old_name?(f) || leftover_identity_file?(f) }.sort
     end
+  end
+
+  def leftover_identity_file_paths
+    paths = LEFTOVER_IDENTITY_FILES.map { |relative_path| File.join(@root, relative_path) }
+    paths.concat(Dir.glob(File.join(@root, "*.gemspec")))
+    paths.select { |path| File.file?(path) }
+  end
+
+  def leftover_identity_file?(path)
+    return false unless File.file?(path)
+
+    leftover_template_identity?(File.read(path))
+  rescue StandardError
+    false
   end
 
   def file_contains_old_name?(path)
@@ -360,6 +388,8 @@ class GemRenamer
     original = File.read(path)
     updated = original.dup
 
+    rewrite_leftover_homepages!(updated)
+
     # Replace snake_case name (with word boundaries)
     updated.gsub!(/\b#{Regexp.escape(@old_name)}\b/, @new_name)
 
@@ -421,6 +451,8 @@ class GemRenamer
       next
     end
 
+    leftovers.concat(leftover_template_identity_paths)
+
     return if leftovers.empty?
 
     error_msg = <<~ERROR
@@ -437,6 +469,36 @@ class GemRenamer
     ERROR
 
     abort_with_error(error_msg)
+  end
+
+  def leftover_template_identity_paths
+    paths = LEFTOVER_IDENTITY_FILES.map { |relative_path| File.join(@root, relative_path) }
+    paths.concat(Dir.glob(File.join(@root, "*.gemspec")))
+
+    leftover_files = []
+    paths.uniq.each do |path|
+      next unless File.file?(path)
+
+      content = File.read(path)
+      leftover_files << relative(path) if leftover_template_identity?(content)
+    rescue StandardError
+      next
+    end
+    leftover_files
+  end
+
+  def leftover_template_identity?(content)
+    return true if content.include?(old_pascal)
+    return true if content.match?(%r{bowerbird-app/gem_template(?:["'/]|$)})
+    return true if content.include?("https://github.com/bowerbird-app/RecordingStudio_gem_template")
+
+    false
+  end
+
+  def rewrite_leftover_homepages!(updated)
+    LEFTOVER_HOMEPAGES.each do |old_homepage|
+      updated.gsub!(old_homepage, "https://github.com/bowerbird-app/#{@new_name}")
+    end
   end
 
   def rename_all_files

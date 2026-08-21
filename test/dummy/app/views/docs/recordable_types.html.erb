@@ -1,7 +1,9 @@
-<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+<% dummy_page_nav(title: "Recordable types", back_url: root_path) %>
+
+<div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Recordable types",
-    subtitle: "The list below comes from RecordingStudio.recordable_declarations and v3 parent/root introspection.",
+    subtitle: "The list below comes from RecordingStudio.recordable_declarations and parent/root introspection.",
     variant: :h1
   ) %>
 

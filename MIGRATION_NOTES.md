@@ -1,19 +1,13 @@
-# Migration Notes - Private Gems to Public Gems
-
-## Completed Changes
-
-1. Removed repository access entries from `.devcontainer/devcontainer.json`.
-2. Updated `docs/gem_template/CODESPACES.md` and `docs/gem_template/PRIVATE_GEMS.md` for public dependencies.
-3. Replaced MakeupArtist with FlatPack in the dummy app dependency, views, layouts, and Tailwind sources.
-4. Pinned the dummy app to FlatPack `v0.1.129` in `test/dummy/Gemfile` and its lockfile.
-5. Regenerated the dummy app bundle and completed the FlatPack installation work.
+# Migration Notes
 
 ## Current Requirements
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
+- Recording Studio 4.x (`~> 4.1` in the gemspec; dummy GitHub tag `v4.2.0`)
+- Accessible dummy tag `v0.6.0` and Root Switchable dummy tag `v0.5.0`
+- FlatPack dummy tag `v0.1.133`
 - Public RubyGems and GitHub access for dependency installation
-- No private gem credentials for the template dependencies
 
 ## Verification
 

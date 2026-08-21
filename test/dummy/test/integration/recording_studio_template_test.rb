@@ -2,29 +2,30 @@
 
 require "test_helper"
 
-class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
+class RecordingStudioTemplateTest < ActiveSupport::TestCase
   test "dummy app loads root switchable config and controller support" do
     assert_equal [ "all_workspaces" ], RecordingStudioRootSwitchable.configuration.scopes.keys
     assert_equal :application_layout, RecordingStudioRootSwitchable.configuration.layout
     assert_includes ApplicationController.ancestors, RecordingStudio::RootSwitchable::ControllerSupport
+    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
 
-  test "dummy app validates v3 recordable declarations" do
+  test "dummy app validates recordable declarations" do
     assert RecordingStudio.validate_recordable_declarations!
     assert_equal [ "Workspace" ], RecordingStudio.root_recordable_types
     assert_equal [ "Workspace", "Folder" ], RecordingStudio.allowed_parent_types_for("Page")
   end
 
-  test "dummy app schema excludes removed access control tables" do
+  test "dummy app schema keeps accessible grants and excludes removed core tables" do
     connection = ActiveRecord::Base.connection
 
     assert connection.column_exists?(:recording_studio_recordings, :root_recording_id)
-    refute connection.table_exists?(:recording_studio_accesses)
+    assert connection.table_exists?(:recording_studio_accesses)
     refute connection.table_exists?(:recording_studio_access_boundaries)
     refute connection.table_exists?(:recording_studio_device_sessions)
   end
 
-  test "dummy seeds use v3 hierarchy idempotently and restore current actor" do
+  test "dummy seeds use hierarchy idempotently and restore current actor" do
     Current.actor = nil
 
     load Rails.root.join("db/seeds.rb").to_s
@@ -58,5 +59,13 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     assert_nil Current.actor
   ensure
     Current.actor = nil
+  end
+
+  test "workspace opts into accessible and the example mixin without enabling them globally" do
+    assert RecordingStudio.capability_enabled?(:accessible, for: Workspace)
+    assert RecordingStudio.capability_enabled?(:example, for: Workspace)
+    refute RecordingStudio.capability_enabled?(:accessible, for: Folder)
+    refute RecordingStudio.capability_enabled?(:example, for: Page)
+    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
 end

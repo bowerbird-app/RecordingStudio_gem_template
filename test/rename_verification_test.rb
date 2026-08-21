@@ -275,6 +275,42 @@ class RenameVerificationTest < Minitest::Test
            "Old main lib file should not exist: #{old_lib}"
   end
 
+  def test_readme_has_no_leftover_template_identity_after_rename
+    skip if @gem_name == "gem_template"
+
+    content = File.read(File.join(@root, "README.md"))
+    refute_includes content, "GemTemplate",
+                    "README.md still contains leftover GemTemplate identity"
+    refute_match %r{bowerbird-app/gem_template(?:["'/]|$)}, content,
+                 "README.md still points at bowerbird-app/gem_template"
+    refute_includes content, "https://github.com/bowerbird-app/RecordingStudio_gem_template",
+                    "README.md still points at the template homepage"
+  end
+
+  def test_changelog_has_no_leftover_template_identity_after_rename
+    skip if @gem_name == "gem_template"
+
+    content = File.read(File.join(@root, "CHANGELOG.md"))
+    refute_includes content, "GemTemplate",
+                    "CHANGELOG.md still contains leftover GemTemplate identity"
+    refute_match %r{bowerbird-app/gem_template(?:["'/]|$)}, content,
+                 "CHANGELOG.md still points at bowerbird-app/gem_template"
+    refute_includes content, "https://github.com/bowerbird-app/RecordingStudio_gem_template",
+                    "CHANGELOG.md still points at the template homepage"
+  end
+
+  def test_gemspec_homepage_has_no_leftover_template_identity_after_rename
+    skip if @gem_name == "gem_template"
+
+    content = read_gemspec
+    refute_includes content, "GemTemplate",
+                    "Gemspec still contains leftover GemTemplate identity"
+    refute_match %r{bowerbird-app/gem_template(?:["'/]|$)}, content,
+                 "Gemspec still points at bowerbird-app/gem_template"
+    refute_includes content, "https://github.com/bowerbird-app/RecordingStudio_gem_template",
+                    "Gemspec still points at the template homepage"
+  end
+
   # ============================================================
   # Module Loading Tests (Runtime Verification)
   # ============================================================

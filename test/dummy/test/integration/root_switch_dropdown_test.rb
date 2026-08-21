@@ -6,6 +6,18 @@ require "devise/test/integration_helpers"
 class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
+  test "sign in page uses the devise layout and is not squished by the default layout" do
+    get new_user_session_path
+
+    assert_response :success
+    assert_includes response.body, "admin@admin.com"
+    assert_includes response.body, "Password"
+    assert_includes response.body, 'data-theme="rounded"'
+    refute_includes response.body, "data-recording-studio-default-layout"
+    refute_includes response.body, "mt-28"
+    refute_includes response.body, "fixed inset-0"
+  end
+
   test "home page renders the root switch dropdown trigger" do
     user = User.find_or_create_by!(email: "root-switch-test@example.com") do |record|
       record.password = "Password123!"
@@ -21,9 +33,10 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, workspace.name
+    assert_select "body[data-recording-studio-default-layout='true']", count: 1
   end
 
-  test "root switch page renders with the host sidebar" do
+  test "root switch page renders with the host default layout" do
     user = User.find_or_create_by!(email: "root-switch-page-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
@@ -37,7 +50,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     get "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces"
 
     assert_response :success
-    assert_includes response.body, "Install"
+    assert_select "body[data-recording-studio-default-layout='true']", count: 1
+    refute_includes response.body, "flat-pack-sidebar-layout"
   end
 
   test "switching returns to the current page when it is a valid internal route" do

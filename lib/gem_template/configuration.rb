@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "hooks"
-
 module GemTemplate
   class Configuration
     attr_accessor :api_key, :enable_feature_x, :timeout
@@ -11,7 +9,7 @@ module GemTemplate
       @api_key = ENV.fetch("GEM_TEMPLATE_API_KEY", nil)
       @enable_feature_x = false
       @timeout = 5
-      @hooks = Hooks.new
+      @hooks = RecordingStudio::Hooks.new
     end
 
     def to_h
