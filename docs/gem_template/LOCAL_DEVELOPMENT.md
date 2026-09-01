@@ -187,7 +187,7 @@ Cloud Agents discover project skills from `.cursor/skills/` (and `.agents/skills
 
 `.cursor/environment.json` is a repo-file-managed environment. It sets `name` to `recording-studio-gem-template` so Cloud Agents do not fall through to a laptop Personal snapshot when `main` has no environment file. It sets `install` to `.cursor/fetch-skills.sh` (repo root). It deliberately omits `snapshot` and `agentCanUpdateSnapshot`. Pinning a Personal build snapshot would skip `install` and leave `.cursor/skills/` missing.
 
-The script lists `recording-studio-*` skill ids from the public GitHub contents API, then fetches each `SKILL.md` from `raw.githubusercontent.com` into `.cursor/skills/<id>/SKILL.md`. It also fetches pstack `poteto-mode`. It does not clone the plugin repo, does not write `~/.cursor/skills`, and exits 0 on fetch failures so the Build still succeeds.
+The script lists `recording-studio-*` skill ids from the public GitHub contents API, then fetches each `SKILL.md` from `raw.githubusercontent.com` into `.cursor/skills/<id>/SKILL.md`. Extra skills come from the plugin catalog (`skill-sources.json`). If the catalog is missing or invalid, extras are skipped and Recording Studio skills still fetch. It does not clone the plugin repo, does not write `~/.cursor/skills`, and exits 0 on fetch failures so the Build still succeeds.
 
 `.cursor/skills/` is gitignored. Local teammates who already have the Recording Studio Cursor plugin must not commit a second copy. Do not vendor `SKILL.md` files. Re-run the script anytime; it overwrites in place.
 
