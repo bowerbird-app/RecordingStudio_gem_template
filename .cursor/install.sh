@@ -76,9 +76,9 @@ log "Preparing dummy app database and assets"
 ( cd test/dummy && bundle exec rails tailwindcss:build )
 
 # ---------------------------------------------------------------------------
-# 6. Fetch Recording Studio Cursor skills (best-effort, never fails the build)
+# 6. Fetch Recording Studio Cursor skills and plugin rules (best-effort)
 # ---------------------------------------------------------------------------
-log "Fetching Recording Studio skills"
+log "Fetching Recording Studio skills and plugin rules"
 "${SCRIPT_DIR}/fetch-skills.sh" || true
 
 log "install.sh complete"

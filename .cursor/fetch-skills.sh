@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# Cloud Agent Build hook. Fetches project skills into .cursor/skills (gitignored).
-# Lists recording-studio-* from the plugin skills directory, then extra skills from
-# skill-sources.json. Discover ids via the public GitHub contents API, then GET
-# each SKILL.md from raw.githubusercontent.com. Never clones. Never writes
-# ~/.cursor/skills. Fetch failures warn on stderr and continue; always exit 0
-# so the Build succeeds.
+# Cloud Agent Build hook. Fetches project skills into .cursor/skills and plugin
+# *.mdc rules into .cursor/rules (both gitignored). Lists recording-studio-*
+# from the plugin skills directory, then extra skills from skill-sources.json,
+# then type=file *.mdc from the plugin rules directory. Discover ids via the
+# public GitHub contents API, then GET each file from raw.githubusercontent.com.
+# Never clones. Never writes ~/.cursor/skills or ~/.cursor/rules. Fetch failures
+# warn on stderr and continue; always exit 0 so the Build succeeds.
 
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SKILLS_DIR="${ROOT}/.cursor/skills"
+RULES_DIR="${ROOT}/.cursor/rules"
 
 PLUGIN_OWNER="bowerbird-app"
 PLUGIN_REPO="RecordingStudio_cursor_plugin"
@@ -18,6 +20,8 @@ PLUGIN_REF="main"
 PLUGIN_CONTENTS_API="https://api.github.com/repos/${PLUGIN_OWNER}/${PLUGIN_REPO}/contents/skills?ref=${PLUGIN_REF}&per_page=100"
 PLUGIN_RAW="https://raw.githubusercontent.com/${PLUGIN_OWNER}/${PLUGIN_REPO}/${PLUGIN_REF}/skills"
 PLUGIN_CATALOG="https://raw.githubusercontent.com/${PLUGIN_OWNER}/${PLUGIN_REPO}/${PLUGIN_REF}/skill-sources.json"
+PLUGIN_RULES_API="https://api.github.com/repos/${PLUGIN_OWNER}/${PLUGIN_REPO}/contents/rules?ref=${PLUGIN_REF}"
+PLUGIN_RULES_RAW="https://raw.githubusercontent.com/${PLUGIN_OWNER}/${PLUGIN_REPO}/${PLUGIN_REF}/rules"
 USER_AGENT="RecordingStudio-gem-template-fetch-skills"
 SKIP_ID="add-skill-or-agent"
 
@@ -47,6 +51,25 @@ fetch_raw() {
   fi
 }
 
+fetch_rule() {
+  local filename="$1"
+  local url="$2"
+  local tmp
+
+  mkdir -p "${RULES_DIR}"
+  tmp="$(mktemp "${RULES_DIR}/.${filename}.XXXXXX")" || {
+    warn "could not create temp file for ${filename}"
+    return 0
+  }
+
+  if curl -fsSL --retry 2 --retry-delay 1 -A "${USER_AGENT}" -o "${tmp}" "${url}" && [[ -s "${tmp}" ]]; then
+    mv -f "${tmp}" "${RULES_DIR}/${filename}"
+  else
+    warn "failed to fetch ${filename} from ${url}"
+    rm -f "${tmp}"
+  fi
+}
+
 dir_names_from_contents_json() {
   python3 -c '
 import json, sys
@@ -63,6 +86,26 @@ for item in data:
         continue
     name = item.get("name") or ""
     if name:
+        print(name)
+'
+}
+
+file_names_from_contents_json() {
+  python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+if not isinstance(data, list):
+    sys.exit(0)
+for item in data:
+    if not isinstance(item, dict):
+        continue
+    if item.get("type") != "file":
+        continue
+    name = item.get("name") or ""
+    if name.endswith(".mdc") and "/" not in name:
         print(name)
 '
 }
@@ -146,6 +189,33 @@ fetch_catalog_extras() {
   done <<< "${sources}"
 }
 
+list_rule_files() {
+  local json
+
+  json="$(curl -fsSL --retry 2 --retry-delay 1 -A "${USER_AGENT}" \
+    -H "Accept: application/vnd.github+json" \
+    "${PLUGIN_RULES_API}")" || {
+    warn "failed to list rules from GitHub contents API; skipping"
+    return 0
+  }
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    warn "python3 not found; cannot parse rule list; skipping"
+    return 0
+  fi
+
+  printf '%s' "${json}" | file_names_from_contents_json
+}
+
+fetch_plugin_rules() {
+  local filename
+
+  while IFS= read -r filename; do
+    [[ -z "${filename}" ]] && continue
+    fetch_rule "${filename}" "${PLUGIN_RULES_RAW}/${filename}"
+  done < <(list_rule_files)
+}
+
 while IFS= read -r skill_id; do
   [[ -z "${skill_id}" ]] && continue
   [[ "${skill_id}" == "${SKIP_ID}" ]] && continue
@@ -154,5 +224,6 @@ while IFS= read -r skill_id; do
 done < <(list_dir_ids "${PLUGIN_CONTENTS_API}")
 
 fetch_catalog_extras
+fetch_plugin_rules
 
 exit 0
