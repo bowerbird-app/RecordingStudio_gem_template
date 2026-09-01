@@ -18,7 +18,7 @@ class CursorSkillFetchTest < ActiveSupport::TestCase
     refute_includes script, "cursor/plugins"
     refute_includes script, "poteto-mode"
     refute_includes script, "pstack"
-    refute_includes script, '${HOME}/.cursor/rules'
+    refute_includes script, "${HOME}/.cursor/rules"
     assert_includes script, 'RULES_DIR="${ROOT}/.cursor/rules"'
   end
 

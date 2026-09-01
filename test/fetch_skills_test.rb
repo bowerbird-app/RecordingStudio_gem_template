@@ -32,7 +32,7 @@ class FetchSkillsTest < Minitest::Test
     refute_includes script, "cursor/plugins"
     refute_includes script, "poteto-mode"
     refute_includes script, "pstack"
-    refute_includes script, '${HOME}/.cursor/rules'
+    refute_includes script, "${HOME}/.cursor/rules"
     refute_includes script, "git clone"
     assert_includes script, "skill-sources.json"
     assert_includes script, "contents/rules"
