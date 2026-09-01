@@ -17,6 +17,13 @@ class GemTemplateTest < Minitest::Test
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.1"'
   end
 
+  def test_gemspec_excludes_cursor_config
+    spec = Gem::Specification.load(File.expand_path("../gem_template.gemspec", __dir__))
+    cursor_files = spec.files.select { |path| path == ".cursor" || path.split("/").include?(".cursor") }
+
+    assert_empty cursor_files, "gemspec must not package .cursor/ (got #{cursor_files.inspect})"
+  end
+
   def test_dummy_gemfile_pins_verified_4x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 

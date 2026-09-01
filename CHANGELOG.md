@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Cloud Agent skill-fetch hook so copied addons load Recording Studio skills at Build time. `.cursor/environment.json` `install` runs `.cursor/fetch-skills.sh`, which lists `recording-studio-*` skill ids from the public GitHub contents API and writes each `SKILL.md` into `.cursor/skills/` (gitignored, not packaged). Also fetches pstack `poteto-mode`. Failures warn and still exit 0.
+
 ## [0.2.0] - 2026-08-21
 
 New addons copied from this template are born on Recording Studio 4.x.
