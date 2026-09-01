@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Cloud Agent Build hook. Fetches project skills into .cursor/skills (gitignored).
-# Discover ids via the public GitHub contents API, then GET each SKILL.md from
-# raw.githubusercontent.com. Never clones. Never writes ~/.cursor/skills.
-# Fetch failures warn on stderr and continue; always exit 0 so the Build succeeds.
+# Lists recording-studio-* from the plugin skills directory, then extra skills from
+# skill-sources.json. Discover ids via the public GitHub contents API, then GET
+# each SKILL.md from raw.githubusercontent.com. Never clones. Never writes
+# ~/.cursor/skills. Fetch failures warn on stderr and continue; always exit 0
+# so the Build succeeds.
 
 set -u
 
@@ -15,7 +17,7 @@ PLUGIN_REPO="RecordingStudio_cursor_plugin"
 PLUGIN_REF="main"
 PLUGIN_CONTENTS_API="https://api.github.com/repos/${PLUGIN_OWNER}/${PLUGIN_REPO}/contents/skills?ref=${PLUGIN_REF}&per_page=100"
 PLUGIN_RAW="https://raw.githubusercontent.com/${PLUGIN_OWNER}/${PLUGIN_REPO}/${PLUGIN_REF}/skills"
-PSTACK_RAW="https://raw.githubusercontent.com/cursor/plugins/main/pstack/skills"
+PLUGIN_CATALOG="https://raw.githubusercontent.com/${PLUGIN_OWNER}/${PLUGIN_REPO}/${PLUGIN_REF}/skill-sources.json"
 USER_AGENT="RecordingStudio-gem-template-fetch-skills"
 SKIP_ID="add-skill-or-agent"
 
@@ -45,21 +47,8 @@ fetch_raw() {
   fi
 }
 
-list_plugin_skill_ids() {
-  local json
-  json="$(curl -fsSL --retry 2 --retry-delay 1 -A "${USER_AGENT}" \
-    -H "Accept: application/vnd.github+json" \
-    "${PLUGIN_CONTENTS_API}")" || {
-    warn "failed to list skills from GitHub contents API"
-    return 0
-  }
-
-  if ! command -v python3 >/dev/null 2>&1; then
-    warn "python3 not found; cannot parse skill list"
-    return 0
-  fi
-
-  printf '%s' "${json}" | python3 -c '
+dir_names_from_contents_json() {
+  python3 -c '
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -73,17 +62,97 @@ for item in data:
     if item.get("type") != "dir":
         continue
     name = item.get("name") or ""
-    if name.startswith("recording-studio-"):
+    if name:
         print(name)
 '
+}
+
+list_dir_ids() {
+  local api_url="$1"
+  local json
+
+  json="$(curl -fsSL --retry 2 --retry-delay 1 -A "${USER_AGENT}" \
+    -H "Accept: application/vnd.github+json" \
+    "${api_url}")" || {
+    warn "failed to list skills from GitHub contents API"
+    return 0
+  }
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    warn "python3 not found; cannot parse skill list"
+    return 0
+  fi
+
+  printf '%s' "${json}" | dir_names_from_contents_json
+}
+
+catalog_sources() {
+  python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(2)
+if not isinstance(data, dict):
+    sys.exit(2)
+sources = data.get("sources")
+if not isinstance(sources, list):
+    sys.exit(3)
+for source in sources:
+    if not isinstance(source, dict):
+        continue
+    contents_api = source.get("contents_api") or ""
+    raw_base = source.get("raw_base") or ""
+    if contents_api and raw_base:
+        print(contents_api + "\t" + raw_base)
+'
+}
+
+fetch_catalog_extras() {
+  local catalog
+  local sources
+  local parse_status
+  local contents_api
+  local raw_base
+  local skill_id
+
+  catalog="$(curl -fsSL --retry 2 --retry-delay 1 -A "${USER_AGENT}" "${PLUGIN_CATALOG}")" || {
+    warn "skill-sources.json unavailable; skipping extras"
+    return 0
+  }
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    warn "python3 not found; cannot parse skill-sources.json"
+    return 0
+  fi
+
+  sources="$(printf '%s' "${catalog}" | catalog_sources)"
+  parse_status=$?
+  if [[ "${parse_status}" -ne 0 ]]; then
+    if [[ "${parse_status}" -eq 2 ]]; then
+      warn "skill-sources.json is invalid JSON; skipping extras"
+    else
+      warn "skill-sources.json has no sources; skipping extras"
+    fi
+    return 0
+  fi
+
+  while IFS=$'\t' read -r contents_api raw_base; do
+    [[ -z "${contents_api}" || -z "${raw_base}" ]] && continue
+    while IFS= read -r skill_id; do
+      [[ -z "${skill_id}" ]] && continue
+      fetch_raw "${skill_id}" "${raw_base}/${skill_id}/SKILL.md"
+    done < <(list_dir_ids "${contents_api}")
+  done <<< "${sources}"
 }
 
 while IFS= read -r skill_id; do
   [[ -z "${skill_id}" ]] && continue
   [[ "${skill_id}" == "${SKIP_ID}" ]] && continue
+  [[ "${skill_id}" == recording-studio-* ]] || continue
   fetch_raw "${skill_id}" "${PLUGIN_RAW}/${skill_id}/SKILL.md"
-done < <(list_plugin_skill_ids)
+done < <(list_dir_ids "${PLUGIN_CONTENTS_API}")
 
-fetch_raw "poteto-mode" "${PSTACK_RAW}/poteto-mode/SKILL.md"
+fetch_catalog_extras
 
 exit 0
