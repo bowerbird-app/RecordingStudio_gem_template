@@ -14,7 +14,17 @@ Authenticated dummy pages use Recording Studio's shared default layout (`Recordi
 
 ## Quick Start
 
-### GitHub Codespaces (Recommended)
+### Cursor Cloud Agent (Recommended)
+
+A Cloud Agent boots this repo into a ready-to-use dev environment with no manual steps. The setup lives in `.cursor/`:
+
+- `install.sh` provisions Ruby (pinned by `.ruby-version`), PostgreSQL 16, all gems, the seeded dummy database, and compiled CSS at build time, then fetches Recording Studio skills.
+- `start.sh` starts PostgreSQL on every boot.
+- `environment.json` runs the `rails-server` and `tailwind-watch` terminals and exposes port 3000.
+
+Open port 3000 and sign in at `/users/sign_in`. No environment variables are required — the dummy app's `database.yml` defaults match the provisioned PostgreSQL cluster.
+
+### GitHub Codespaces
 
 1. Click **Code** → **Codespaces** → **Create codespace**
 2. Wait for setup to complete

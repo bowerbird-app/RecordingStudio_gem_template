@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Cloud Agent skill-fetch hook so copied addons load Recording Studio skills at Build time. `.cursor/environment.json` names the environment `recording-studio-gem-template` and sets `install` to `.cursor/fetch-skills.sh`. `snapshot` is omitted on purpose so Builds run install instead of reusing a laptop Personal snapshot. The script lists `recording-studio-*` skill ids from the public GitHub contents API and writes each `SKILL.md` into `.cursor/skills/` (gitignored, not packaged). Also fetches pstack `poteto-mode`. Failures warn and still exit 0.
 
+## [0.2.1] - 2026-09-01
+
+### Added
+- Full Cloud Agent development environment. `.cursor/install.sh` now provisions the whole stack at Build time on Cursor's default image — Ruby (pinned by `.ruby-version`), PostgreSQL 16, gem dependencies for both the gem and the dummy host app, the seeded dummy database, and compiled Tailwind/FlatPack CSS — then runs the existing `.cursor/fetch-skills.sh`. `snapshot` stays omitted so Builds run `install` as before.
+- `.cursor/start.sh` per-boot hook that starts PostgreSQL and waits for readiness.
+- `.cursor/environment.json` now declares `start` plus `rails-server` and `tailwind-watch` terminals and exposes port 3000, so a fresh Cloud Agent boots straight into a running, signed-in-ready dummy app.
+
+### Notes
+- The install script is idempotent; running it against a warm machine reuses the existing Ruby, packages, and gems.
+- No gem runtime code changed. `.cursor/` files are excluded from the packaged gem.
+
 ## [0.2.0] - 2026-08-21
 
 New addons copied from this template are born on Recording Studio 4.x.
@@ -61,7 +72,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.1
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.0
 [0.1.2]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.1.2
 [0.1.1]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.1.1
