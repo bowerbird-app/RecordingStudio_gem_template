@@ -4,7 +4,7 @@ require "test_helper"
 
 class GemTemplateTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.0", ::GemTemplate::VERSION
+    assert_equal "0.2.1", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
@@ -29,9 +29,16 @@ class GemTemplateTest < Minitest::Test
     json = JSON.parse(File.read(path))
 
     assert_equal "recording-studio-gem-template", json["name"]
-    assert_equal ".cursor/fetch-skills.sh", json["install"]
+    assert_equal ".cursor/install.sh", json["install"]
+    assert_equal ".cursor/start.sh", json["start"]
     refute json.key?("snapshot"), "snapshot pins a Personal build and skips install"
     refute json.key?("agentCanUpdateSnapshot")
+  end
+
+  def test_cursor_install_still_fetches_skills
+    install_script = File.read(File.expand_path("../.cursor/install.sh", __dir__))
+
+    assert_includes install_script, "fetch-skills.sh"
   end
 
   def test_dummy_gemfile_pins_verified_4x_github_tags
