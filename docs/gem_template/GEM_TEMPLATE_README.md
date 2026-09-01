@@ -100,7 +100,7 @@ gem_template/
 │   │       ├── base_service.rb
 │   │       └── example_service.rb
 │   └── generators/
-├── .cursor/                 # Cloud Agent Build hook (skills/ is gitignored)
+├── .cursor/                 # Repo-managed Cloud Agent env (name + install, no snapshot)
 ├── test/dummy/              # Test Rails app
 ├── docs/                    # Documentation
 └── gem_template.gemspec
