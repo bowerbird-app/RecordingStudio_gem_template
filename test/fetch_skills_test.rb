@@ -18,6 +18,13 @@ class FetchSkillsTest < Minitest::Test
   EXTRA_RAW_BASE = "https://raw.githubusercontent.com/example/extra-skills/main/skills"
   EXTRA_SKILL = "#{EXTRA_RAW_BASE}/catalog-skill/SKILL.md".freeze
   EMPTY_NAME_SKILL = "#{EXTRA_RAW_BASE}/SKILL.md".freeze
+  PLUGIN_RULES =
+    "https://api.github.com/repos/bowerbird-app/RecordingStudio_cursor_plugin/contents/rules?ref=main"
+  PLUGIN_RULES_RAW =
+    "https://raw.githubusercontent.com/bowerbird-app/RecordingStudio_cursor_plugin/main/rules"
+  PLUGIN_RULE = "#{PLUGIN_RULES_RAW}/flatpack-ui.mdc".freeze
+  PLUGIN_RULE_COPY = "#{PLUGIN_RULES_RAW}/user-facing-copy.mdc".freeze
+  PLUGIN_RULE_NOTES = "#{PLUGIN_RULES_RAW}/notes.md".freeze
 
   def test_script_does_not_hardcode_extra_skill_urls
     script = File.read(SCRIPT)
@@ -25,7 +32,11 @@ class FetchSkillsTest < Minitest::Test
     refute_includes script, "cursor/plugins"
     refute_includes script, "poteto-mode"
     refute_includes script, "pstack"
+    refute_includes script, "${HOME}/.cursor/rules"
+    refute_includes script, "git clone"
     assert_includes script, "skill-sources.json"
+    assert_includes script, "contents/rules"
+    assert_includes script, 'RULES_DIR="${ROOT}/.cursor/rules"'
   end
 
   def test_catalog_lists_dirs_and_fetches_each_skill_md
@@ -90,6 +101,75 @@ class FetchSkillsTest < Minitest::Test
     refute_includes result[:urls], EXTRA_CONTENTS
   end
 
+  def test_plugin_rules_mdc_files_land_under_cursor_rules
+    result = run_fetch(
+      responses.merge(
+        PLUGIN_RULES => ok(rules_listing_json),
+        PLUGIN_RULE => ok("# flatpack-ui\n")
+      )
+    )
+
+    assert_equal 0, result[:status]
+    assert_equal "# recording-studio-gems\n", result[:skills]["recording-studio-gems"]
+    assert_equal "# flatpack-ui\n", result[:rules]["flatpack-ui.mdc"]
+    refute_includes result[:rules].keys, "notes.md"
+    refute_includes result[:rules].keys, "README.md"
+    refute_includes result[:rules].keys, "nested"
+    assert_includes result[:urls], PLUGIN_CONTENTS
+    assert_includes result[:urls], PLUGIN_SKILL
+    assert_includes result[:urls], PLUGIN_RULES
+    assert_includes result[:urls], PLUGIN_RULE
+    refute_includes result[:urls], PLUGIN_RULE_NOTES
+    refute_includes result[:urls], "#{PLUGIN_RULES_RAW}/README.md"
+  end
+
+  def test_rules_listing_404_skips_rules_and_still_fetches_skills
+    result = run_fetch(responses.merge(PLUGIN_RULES => { "status" => 404, "body" => "Not Found" }))
+
+    assert_equal 0, result[:status]
+    assert_equal "# recording-studio-gems\n", result[:skills]["recording-studio-gems"]
+    assert_empty result[:rules]
+    assert_includes result[:stderr], "failed to list rules"
+    assert_includes result[:stderr], "skipping"
+    assert_includes result[:urls], PLUGIN_SKILL
+    assert_includes result[:urls], PLUGIN_RULES
+    refute_includes result[:urls], PLUGIN_RULE
+  end
+
+  def test_one_rule_fetch_failure_warns_and_still_exits_zero
+    result = run_fetch(
+      responses.merge(
+        PLUGIN_RULES => ok(two_rules_listing_json),
+        PLUGIN_RULE => ok("# flatpack-ui\n"),
+        PLUGIN_RULE_COPY => { "status" => 404, "body" => "Not Found" }
+      )
+    )
+
+    assert_equal 0, result[:status]
+    assert_equal "# flatpack-ui\n", result[:rules]["flatpack-ui.mdc"]
+    refute_includes result[:rules].keys, "user-facing-copy.mdc"
+    assert_includes result[:stderr], "failed to fetch user-facing-copy.mdc"
+    assert_includes result[:urls], PLUGIN_RULE
+    assert_includes result[:urls], PLUGIN_RULE_COPY
+  end
+
+  def test_fetched_rules_are_gitignored_untracked_and_not_packaged
+    root = File.expand_path("..", __dir__)
+    gitignore = File.read(File.join(root, ".gitignore"))
+
+    assert_includes gitignore, ".cursor/rules/"
+    assert_includes gitignore, ".cursor/skills/"
+    assert_equal "0.2.1", GemTemplate::VERSION
+
+    tracked, status = Open3.capture2("git", "-C", root, "ls-files", "--", ".cursor/rules")
+    assert_equal 0, status.exitstatus
+    assert_equal "", tracked.strip
+
+    spec = Gem::Specification.load(File.join(root, "gem_template.gemspec"))
+    cursor_files = spec.files.select { |path| path == ".cursor" || path.split("/").include?(".cursor") }
+    assert_empty cursor_files
+  end
+
   private
 
   def responses
@@ -113,6 +193,23 @@ class FetchSkillsTest < Minitest::Test
       { "name" => "catalog-skill", "type" => "dir" },
       { "name" => "", "type" => "dir" },
       { "name" => "README.md", "type" => "file" }
+    )
+  end
+
+  def rules_listing_json
+    contents_json(
+      { "name" => "flatpack-ui.mdc", "type" => "file" },
+      { "name" => "notes.md", "type" => "file" },
+      { "name" => "nested", "type" => "dir" },
+      { "name" => "README.md", "type" => "file" },
+      { "name" => "", "type" => "file" }
+    )
+  end
+
+  def two_rules_listing_json
+    contents_json(
+      { "name" => "flatpack-ui.mdc", "type" => "file" },
+      { "name" => "user-facing-copy.mdc", "type" => "file" }
     )
   end
 
@@ -166,7 +263,8 @@ class FetchSkillsTest < Minitest::Test
       stdout: stdout,
       stderr: stderr,
       urls: File.read(log_path).split("\n").reject(&:empty?),
-      skills: snapshot_skills(File.join(cursor_dir, "skills"))
+      skills: snapshot_skills(File.join(cursor_dir, "skills")),
+      rules: snapshot_rules(File.join(cursor_dir, "rules"))
     }
   end
 
@@ -176,6 +274,18 @@ class FetchSkillsTest < Minitest::Test
     Dir.children(skills_dir).each_with_object({}) do |skill_id, skills|
       path = File.join(skills_dir, skill_id, "SKILL.md")
       skills[skill_id] = File.read(path) if File.file?(path)
+    end
+  end
+
+  def snapshot_rules(rules_dir)
+    return {} unless File.directory?(rules_dir)
+
+    Dir.children(rules_dir).each_with_object({}) do |name, rules|
+      next if name.start_with?(".")
+      next unless name.end_with?(".mdc")
+
+      path = File.join(rules_dir, name)
+      rules[name] = File.read(path) if File.file?(path)
     end
   end
 
