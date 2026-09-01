@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** September 1, 2026
+> *   **Last Updated:** May 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -181,18 +181,6 @@ bin/rails db:migrate
 
 ---
 
-## Cursor Cloud Agents
-
-Cloud Agents discover project skills from `.cursor/skills/` (and `.agents/skills/`) in the checkout at agent start. They do not inherit a laptop Cursor plugin.
-
-`.cursor/environment.json` is a repo-file-managed environment. It sets `name` to `recording-studio-gem-template` so Cloud Agents do not fall through to a laptop Personal snapshot when `main` has no environment file. It sets `install` to `.cursor/fetch-skills.sh` (repo root). It deliberately omits `snapshot` and `agentCanUpdateSnapshot`. Pinning a Personal build snapshot would skip `install` and leave `.cursor/skills/` missing.
-
-The script lists `recording-studio-*` skill ids from the public GitHub contents API, then fetches each `SKILL.md` from `raw.githubusercontent.com` into `.cursor/skills/<id>/SKILL.md`. It also fetches pstack `poteto-mode`. It does not clone the plugin repo, does not write `~/.cursor/skills`, and exits 0 on fetch failures so the Build still succeeds.
-
-`.cursor/skills/` is gitignored. Local teammates who already have the Recording Studio Cursor plugin must not commit a second copy. Do not vendor `SKILL.md` files. Re-run the script anytime; it overwrites in place.
-
----
-
 ## Project Structure
 
 ```
@@ -209,10 +197,6 @@ gem_template/
 │   │   ├── engine.rb         # Engine definition
 │   │   └── version.rb
 │   └── generators/           # Install generator
-├── .cursor/
-│   ├── environment.json      # Repo-managed Cloud Agent env (name + install, no snapshot)
-│   ├── fetch-skills.sh       # Fetches SKILL.md into .cursor/skills/ (gitignored)
-│   └── skills/               # Not committed; regenerated at Build
 ├── test/
 │   ├── dummy/                # Test Rails application
 │   └── *_test.rb             # Unit tests

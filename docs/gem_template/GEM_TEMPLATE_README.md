@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** September 1, 2026
+> *   **Last Updated:** May 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -76,7 +76,6 @@ For current UI work, prefer the top-level README plus the live FlatPack demo app
 | [Engine Hooks](HOOKS.md) | Guide to customizing engine behavior using lifecycle and service hooks. |
 | [Asset Architecture](CSS_JS_ASSETS_ARCHITECTURE.md) | Details on TailwindCSS setup and asset pipeline integration. |
 | [Security](SECURITY.md) | Security considerations. |
-| [Local Development](LOCAL_DEVELOPMENT.md) | Dummy app setup, tests, and the Cloud Agent skill-fetch hook. |
 | [Changelog](../../CHANGELOG.md) | Version history. |
 
 ---
@@ -100,7 +99,6 @@ gem_template/
 │   │       ├── base_service.rb
 │   │       └── example_service.rb
 │   └── generators/
-├── .cursor/                 # Repo-managed Cloud Agent env (name + install, no snapshot)
 ├── test/dummy/              # Test Rails app
 ├── docs/                    # Documentation
 └── gem_template.gemspec
