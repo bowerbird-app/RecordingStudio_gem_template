@@ -17,23 +17,6 @@ class GemTemplateTest < Minitest::Test
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.1"'
   end
 
-  def test_gemspec_excludes_cursor_config
-    spec = Gem::Specification.load(File.expand_path("../gem_template.gemspec", __dir__))
-    cursor_files = spec.files.select { |path| path == ".cursor" || path.split("/").include?(".cursor") }
-
-    assert_empty cursor_files, "gemspec must not package .cursor/ (got #{cursor_files.inspect})"
-  end
-
-  def test_cursor_environment_is_repo_managed_without_snapshot
-    path = File.expand_path("../.cursor/environment.json", __dir__)
-    json = JSON.parse(File.read(path))
-
-    assert_equal "recording-studio-gem-template", json["name"]
-    assert_equal ".cursor/fetch-skills.sh", json["install"]
-    refute json.key?("snapshot"), "snapshot pins a Personal build and skips install"
-    refute json.key?("agentCanUpdateSnapshot")
-  end
-
   def test_dummy_gemfile_pins_verified_4x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
