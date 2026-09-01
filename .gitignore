@@ -23,6 +23,10 @@ tmp/
 *.swo
 *~
 
+# Cursor Cloud Agent skills fetched at Build time by .cursor/fetch-skills.sh.
+# Keep fetch-skills.sh and environment.json tracked; never vendor SKILL.md.
+.cursor/skills/
+
 # OS files
 .DS_Store
 Thumbs.db
