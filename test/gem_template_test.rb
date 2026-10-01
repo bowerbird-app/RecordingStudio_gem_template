@@ -4,7 +4,7 @@ require "test_helper"
 
 class GemTemplateTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.2", ::GemTemplate::VERSION
+    assert_equal "0.2.3", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
@@ -135,7 +135,9 @@ class GemTemplateTest < Minitest::Test
     refute_includes tailwind_source, ":root {"
     refute_includes tailwind_source, "--color-fp-primary"
 
-    head_partial = File.read(File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__))
+    head_partial = File.read(
+      File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__)
+    )
     assert_includes head_partial, 'stylesheet_link_tag "flat_pack/application"'
 
     rake_task = File.read(File.expand_path("dummy/lib/tasks/tailwindcss.rake", __dir__))

@@ -58,8 +58,9 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # image_processing 2.x treats the image processor as a direct dependency.
+# require: false so the app boots on hosts that have not installed libvips yet.
 gem "image_processing", "~> 2.2"
-gem "ruby-vips"
+gem "ruby-vips", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
