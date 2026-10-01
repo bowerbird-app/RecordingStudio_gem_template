@@ -240,8 +240,6 @@ test/dummy/
 ├── app/assets/
 │   ├── builds/
 │   │   └── tailwind.css          # Compiled output (auto-generated)
-│   ├── stylesheets/
-│   │   └── application.css       # Standard Rails stylesheet
 │   └── tailwind/
 │       └── application.css       # Tailwind source file (entry point)
 └── ...

@@ -116,6 +116,8 @@ class GemTemplateTest < Minitest::Test
 
     assert_includes application_layout, '<html data-theme="rounded">'
     assert_includes application_layout, 'stylesheet_link_tag "flat_pack/variables"'
+    assert_includes application_layout, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes application_layout, 'stylesheet_link_tag "flat_pack/rich_text"'
     assert_includes application_layout, "javascript_importmap_tags"
     assert_includes application_layout, "min-h-screen"
     refute_includes application_layout, "mt-28"
@@ -125,13 +127,21 @@ class GemTemplateTest < Minitest::Test
   def test_dummy_tailwind_keeps_flatpack_theme_selection_in_flatpack
     tailwind_source = File.read(File.expand_path("dummy/app/assets/tailwind/application.css", __dir__))
 
-    assert_includes tailwind_source, "../../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}"
-    assert_includes tailwind_source, "flatpack-*/app/components/**/*.{rb,erb}"
-    assert_includes tailwind_source, "../../../vendor/bundle/**/recording_studio/app/views/**/*.erb"
-    assert_includes tailwind_source, "recordingstudio-*/app/views/**/*.erb"
+    assert_includes tailwind_source, "../../../vendor/engines/flat_pack/app/components"
+    assert_includes tailwind_source, "../../../vendor/engines/recording_studio/app/views"
+    refute_includes tailwind_source, "vendor/bundle/**/flatpack/app/components"
+    refute_includes tailwind_source, "recordingstudio-*"
     refute_includes tailwind_source, "@theme"
     refute_includes tailwind_source, ":root {"
     refute_includes tailwind_source, "--color-fp-primary"
+
+    head_partial = File.read(File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__))
+    assert_includes head_partial, 'stylesheet_link_tag "flat_pack/application"'
+
+    rake_task = File.read(File.expand_path("dummy/lib/tasks/tailwindcss.rake", __dir__))
+    assert_includes rake_task, "FlatPack::Engine.root"
+    assert_includes rake_task, "RecordingStudio::Engine.root"
+    assert_includes rake_task, "tailwindcss:link_engine_sources"
   end
 
   def test_recording_studio_keeps_strict_recordable_declarations_enabled
