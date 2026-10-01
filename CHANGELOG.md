@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-01
+
+### Changed
+- Dummy and root GitHub tags: Recording Studio `v4.2.0` → `v4.2.1`, Accessible `v0.9.1` → `v0.10.1`, Root Switchable `v0.5.0` → `v0.5.1`, FlatPack `v0.1.177` → `v0.1.196`.
+- Root and dummy lockfiles refreshed to current releases, including Rails `8.1.4`. The gem test suite requires `minitest-mock` because Minitest 6 moved `Object#stub` out of minitest.
+- Dummy `image_processing` constraint `~> 1.2` → `~> 2.2`. `ruby-vips` is a direct dependency with `require: false`, because image_processing 2 treats the processor as optional and the app should boot before libvips is installed.
+- Dummy schema includes the Accessible 0.10 `recording_studio_access_invitations` table.
+
+### Fixed
+- Dummy Tailwind now scans the installed FlatPack components and Recording Studio views. `tailwindcss:build` links those engines under `test/dummy/vendor/engines`, because git gems are checked out as `bundler/gems/<name>-<rev>` and the old `vendor/bundle/**/flatpack/` glob never matched.
+- Dummy layouts load `flat_pack/application` (component CSS such as `.fp-button`) on both the Devise layout and the Recording Studio default layout.
+- Dummy importmap pins `flat_pack/tiptap` and `flat_pack/local_time`, matching the FlatPack install contract.
+
+### Upgrade notes
+- Point host and dummy Gemfiles at Recording Studio `v4.2.1`, Accessible `v0.10.1`, Root Switchable `v0.5.1`, and FlatPack `v0.1.196`.
+- Run `bin/rails generate recording_studio_accessible:migrations`, then `bin/rails db:migrate`, to add access invitations.
+- Rebuild Tailwind after the FlatPack tag bump: `bin/rails tailwindcss:build`.
+- Hosts still on `gem "image_processing", "~> 1.2"` should move to `~> 2.2` and add `gem "ruby-vips"` (or `gem "mini_magick"`).
+
 ## [0.2.2] - 2026-09-11
 
 ### Changed
@@ -90,7 +109,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.3
 [0.2.2]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.2
 [0.2.1]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.1
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.0

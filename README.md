@@ -157,10 +157,10 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
-| RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.2.0`) |
-| Accessible      | dummy GitHub tag `v0.9.1` |
-| Root Switchable | dummy GitHub tag `v0.5.0` |
-| FlatPack        | dummy GitHub tag `v0.1.177` |
+| RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.2.1`) |
+| Accessible      | dummy GitHub tag `v0.10.1` |
+| Root Switchable | dummy GitHub tag `v0.5.1` |
+| FlatPack        | dummy GitHub tag `v0.1.196` |
 | Devise          | latest  |
 
 The dummy Gemfile keeps `github:` sources so Bundler can fetch those gems. The gemspec still pins `recording_studio` to `~> 4.2` so copied addons declare the core dependency even when GitHub is the fetch source.
