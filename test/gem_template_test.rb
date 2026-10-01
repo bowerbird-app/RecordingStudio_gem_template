@@ -44,11 +44,15 @@ class GemTemplateTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_4x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.9.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.177"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.10.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
     refute_includes gemfile, "recording_studio/v3.0.0"
+    refute_includes gemfile, 'tag: "v4.2.0"'
+    refute_includes gemfile, 'tag: "v0.9.1"'
+    refute_includes gemfile, 'tag: "v0.5.0"'
+    refute_includes gemfile, 'tag: "v0.1.177"'
     refute_includes gemfile, 'tag: "v0.1.133"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "0.3.1"'
@@ -66,6 +70,15 @@ class GemTemplateTest < Minitest::Test
     assert_includes schema, 't.uuid "depends_on_recording_id"'
     assert_includes schema, "index_recording_studio_accesses_on_depends_on_recording_id"
     assert_includes migration, "add_column :recording_studio_accesses, :depends_on_recording_id, :uuid"
+    assert_includes schema, 'create_table "recording_studio_access_invitations"'
+    assert_includes schema, "idx_rs_access_invitations_token_digest"
+    invitation_migration = File.read(
+      File.expand_path(
+        "dummy/db/migrate/20261001000011_create_recording_studio_access_invitations.rb",
+        __dir__
+      )
+    )
+    assert_includes invitation_migration, "create_table :recording_studio_access_invitations"
   end
 
   def test_template_does_not_ship_copied_core_hooks_or_base_service
@@ -146,9 +159,14 @@ class GemTemplateTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "v4.2.0"
-    assert_includes readme, "v0.1.177"
-    assert_includes readme, "v0.9.1"
+    assert_includes readme, "dummy GitHub tag `v4.2.1`"
+    assert_includes readme, "dummy GitHub tag `v0.1.196`"
+    assert_includes readme, "dummy GitHub tag `v0.10.1`"
+    assert_includes readme, "dummy GitHub tag `v0.5.1`"
+    refute_includes readme, "dummy GitHub tag `v4.2.0`"
+    refute_includes readme, "v0.1.177"
+    refute_includes readme, "v0.9.1"
+    refute_includes readme, "v0.5.0"
     refute_includes readme, "v0.1.133"
     refute_includes readme, "v3 declarations"
     refute_includes readme, "RecordingStudio v3"
