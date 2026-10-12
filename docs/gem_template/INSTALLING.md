@@ -201,10 +201,12 @@ This template's dummy app uses RecordingStudio `v4.5.0` (`~> 4.2` in the gemspec
 `recording_studio_recordable(...)`, and create roots with `RecordingStudio.root_recording_for(recordable)`.
 Child recordings must be created with an explicit `parent_recording`.
 
-When Accessible is bundled, pin the dummy or host Gemfile to `v0.13.0`, run
+When Accessible is bundled, pin the dummy or host Gemfile to `v0.15.0`, run
 `bin/rails generate recording_studio_accessible:migrations`, migrate, and rebuild Tailwind after
 bumping FlatPack (`v0.1.196`). Accessible `0.11.0+` stores access roles as strings
 (`view` / `edit` / `admin`); hosts upgrading past that release need the role-column migration.
+Accessible `0.14.0+` adds access constraint and access rule tables for optional action
+audiences; English hosts need no copy changes for the `0.15.0` i18n wave.
 
 ---
 
