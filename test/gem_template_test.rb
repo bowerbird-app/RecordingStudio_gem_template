@@ -45,7 +45,7 @@ class GemTemplateTest < Minitest::Test
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.5.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.13.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.15.0"'
     refute_includes gemfile, 'tag: "v0.10.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.8.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
@@ -92,6 +92,21 @@ class GemTemplateTest < Minitest::Test
     ).max
     assert role_migration, "expected role-column migration in dummy db/migrate"
     assert_includes File.read(role_migration), "change_column :recording_studio_accesses, :role, :string"
+
+    assert_includes schema, 'create_table "recording_studio_access_constraints"'
+    assert_includes schema, 'create_table "recording_studio_access_rules"'
+    assert_includes schema, "index_recording_studio_access_constraints_on_action"
+    assert_includes schema, "index_recording_studio_access_rules_on_action"
+    constraint_migration = Dir.glob(
+      File.expand_path("dummy/db/migrate/*_create_recording_studio_access_constraints.rb", __dir__)
+    ).max
+    rule_migration = Dir.glob(
+      File.expand_path("dummy/db/migrate/*_create_recording_studio_access_rules.rb", __dir__)
+    ).max
+    assert constraint_migration, "expected access constraints migration in dummy db/migrate"
+    assert rule_migration, "expected access rules migration in dummy db/migrate"
+    assert_includes File.read(constraint_migration), "create_table :recording_studio_access_constraints"
+    assert_includes File.read(rule_migration), "create_table :recording_studio_access_rules"
   end
 
   def test_template_does_not_ship_copied_core_hooks_or_base_service
@@ -186,7 +201,7 @@ class GemTemplateTest < Minitest::Test
     assert_includes readme, "RecordingStudio"
     assert_includes readme, "dummy GitHub tag `v4.5.0`"
     assert_includes readme, "dummy GitHub tag `v0.1.196`"
-    assert_includes readme, "dummy GitHub tag `v0.13.0`"
+    assert_includes readme, "dummy GitHub tag `v0.15.0`"
     refute_includes readme, "dummy GitHub tag `v0.10.1`"
     assert_includes readme, "dummy GitHub tag `v0.8.0`"
     refute_includes readme, "dummy GitHub tag `v0.6.0`"
