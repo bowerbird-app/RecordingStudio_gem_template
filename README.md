@@ -160,7 +160,8 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
 | RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.5.0`) |
-| Accessible      | dummy GitHub tag `v0.15.0` |
+| Accessible      | dummy GitHub tag `v0.17.0` |
+| Trashable       | dummy GitHub tag `v0.10.0` (`require: false`; query-only via Accessible) |
 | Root Switchable | dummy GitHub tag `v0.9.0` |
 | FlatPack        | dummy GitHub tag `v0.1.196` |
 | Devise          | latest  |
