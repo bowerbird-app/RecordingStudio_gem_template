@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The install generator adds only GemTemplate view `@source` lines. FlatPack Tailwind sources are no longer written here.
+- CI lint and security jobs install Ruby `3.3` (latest patch). `ubuntu-latest` no longer has a Ruby 3.3.6 build, so reading `.ruby-version` failed before RuboCop, Brakeman, Bundler Audit, or Importmap Audit could run.
+- Dummy `net-ssh` `7.3.3` → `7.3.8` and root plus dummy `crass` `1.0.7` → `1.0.8`. `GHSA-8qw7-6phv-7q6p` stays ignored: FlatPack `v0.1.196` pins `view_component` to `~> 4.12.0`, and the patched release is `4.14.0`.
 
 ### Upgrade notes
 - Run `bin/rails generate flat_pack:install` so FlatPack writes its own Tailwind `@source` lines. Remove any FlatPack `@source` lines a previous GemTemplate install added if they duplicate that installer.
