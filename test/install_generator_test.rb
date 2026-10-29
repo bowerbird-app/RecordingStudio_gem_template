@@ -37,21 +37,24 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal ["mount GemTemplate::Engine, at: \"/addons/recording\""], routes
   end
 
-  def test_add_tailwind_source_injects_engine_and_flatpack_sources
+  def test_add_tailwind_source_injects_gem_sources_and_prints_flatpack_note
     with_temp_app do |dir|
       css_path = File.join(dir, "app/assets/tailwind/application.css")
       File.write(css_path, "@import \"tailwindcss\";\n")
 
       generator = build_generator(dir)
+      messages = []
 
       Rails.stub(:root, Pathname.new(dir)) do
-        generator.stub(:say, nil) do
+        generator.stub(:say, ->(message, color = nil) { messages << [message, color] }) do
           generator.add_tailwind_source
         end
       end
 
       css = File.read(css_path)
       assert_tailwind_sources_present(css)
+      refute_flatpack_sources_written(css)
+      assert_includes messages, [flatpack_install_note, :yellow]
     end
   end
 
@@ -62,14 +65,13 @@ class InstallGeneratorTest < Minitest::Test
         @import "tailwindcss";
         @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
         @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";
-        @source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
-        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
       CSS
 
       generator = build_generator(dir)
+      messages = []
 
       Rails.stub(:root, Pathname.new(dir)) do
-        generator.stub(:say, nil) do
+        generator.stub(:say, ->(message, color = nil) { messages << [message, color] }) do
           generator.add_tailwind_source
         end
       end
@@ -77,6 +79,8 @@ class InstallGeneratorTest < Minitest::Test
       css = File.read(css_path)
       assert_tailwind_sources_present(css)
       assert_tailwind_sources_count(css, 1)
+      refute_flatpack_sources_written(css)
+      assert_includes messages, [flatpack_install_note, :yellow]
     end
   end
 
@@ -97,6 +101,10 @@ class InstallGeneratorTest < Minitest::Test
       tailwind_source_lines.each do |line|
         assert_includes messages, ["  #{line}", :yellow]
       end
+      flatpack_source_lines.each do |line|
+        refute_includes messages, ["  #{line}", :yellow]
+      end
+      assert_includes messages, [flatpack_install_note, :yellow]
     end
   end
 
@@ -119,6 +127,10 @@ class InstallGeneratorTest < Minitest::Test
       tailwind_source_lines.each do |line|
         assert_includes messages, ["  #{line}", :yellow]
       end
+      flatpack_source_lines.each do |line|
+        refute_includes messages, ["  #{line}", :yellow]
+      end
+      assert_includes messages, [flatpack_install_note, :yellow]
     end
   end
 
@@ -159,12 +171,29 @@ class InstallGeneratorTest < Minitest::Test
     end
   end
 
+  def refute_flatpack_sources_written(css)
+    flatpack_source_lines.each do |line|
+      refute_includes css, line
+    end
+    refute_includes css, "FlatPack"
+    refute_includes css, "flatpack"
+  end
+
   def tailwind_source_lines
     [
       '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";',
-      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";',
+      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";'
+    ]
+  end
+
+  def flatpack_source_lines
+    [
       '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
     ]
+  end
+
+  def flatpack_install_note
+    "FlatPack writes its own Tailwind sources. Run `bin/rails generate flat_pack:install`."
   end
 end

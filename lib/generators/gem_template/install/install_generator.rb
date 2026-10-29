@@ -38,7 +38,8 @@ module GemTemplate
         missing_lines = missing_tailwind_source_lines(tailwind_content)
 
         if missing_lines.empty?
-          say "Tailwind already configured to include GemTemplate and FlatPack sources.", :green
+          say "Tailwind already configured to include GemTemplate sources.", :green
+          say_flatpack_install_note
           return
         end
 
@@ -62,6 +63,7 @@ module GemTemplate
         tailwind_source_lines.each do |line|
           say "  #{line}", :yellow
         end
+        say_flatpack_install_note
       end
 
       def missing_tailwind_source_lines(tailwind_content)
@@ -72,17 +74,16 @@ module GemTemplate
         inject_into_file tailwind_css_path, after: "@import \"tailwindcss\";\n" do
           "#{formatted_tailwind_source_block(missing_lines)}\n"
         end
-        say "Added GemTemplate and FlatPack sources to Tailwind CSS configuration.", :green
+        say "Added GemTemplate sources to Tailwind CSS configuration.", :green
         say "Run 'bin/rails tailwindcss:build' to rebuild your CSS.", :green
+        say_flatpack_install_note
       end
 
       def formatted_tailwind_source_block(missing_lines)
         [
           "\n/* Include GemTemplate engine views for Tailwind CSS */",
-          missing_lines.first(2),
-          "\n/* Include FlatPack component sources for Tailwind CSS */",
-          missing_lines.drop(2)
-        ].flatten.reject(&:empty?).join("\n")
+          *missing_lines
+        ].join("\n")
       end
 
       def show_manual_tailwind_notice(missing_lines)
@@ -91,14 +92,17 @@ module GemTemplate
         missing_lines.each do |line|
           say "  #{line}", :yellow
         end
+        say_flatpack_install_note
+      end
+
+      def say_flatpack_install_note
+        say "FlatPack writes its own Tailwind sources. Run `bin/rails generate flat_pack:install`.", :yellow
       end
 
       def tailwind_source_lines
         [
           '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";',
-          '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";'
         ]
       end
     end

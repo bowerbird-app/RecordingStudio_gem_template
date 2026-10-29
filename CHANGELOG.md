@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade notes
 - Point host and dummy Gemfiles at Recording Studio `v4.2.2`.
 
+## [0.2.11] - 2026-10-29
+
+### Changed
+- The install generator adds only GemTemplate view `@source` lines. FlatPack Tailwind sources are no longer written here.
+
+### Upgrade notes
+- Run `bin/rails generate flat_pack:install` so FlatPack writes its own Tailwind `@source` lines. Remove any FlatPack `@source` lines a previous GemTemplate install added if they duplicate that installer.
+
 ## [0.2.3] - 2026-10-01
 
 ### Changed
@@ -116,6 +124,7 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Basic test suite with Minitest
 
 [Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.3...HEAD
+[0.2.11]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.10...v0.2.11
 [0.2.3]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.3
 [0.2.2]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.2
 [0.2.1]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.1
