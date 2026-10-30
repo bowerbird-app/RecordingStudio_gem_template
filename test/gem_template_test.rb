@@ -259,7 +259,11 @@ class GemTemplateTest < Minitest::Test
     stimulus_loader = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
     refute_includes importmap, "recording_studio_root_switchable"
     refute_includes stimulus_loader, "recording_studio_root_switchable"
-    refute File.exist?(File.expand_path("dummy/app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__))
+    copied_root_switch = File.expand_path(
+      "dummy/app/views/recording_studio_root_switchable/root_switches/show.html.erb",
+      __dir__
+    )
+    refute File.exist?(copied_root_switch)
   end
 
   def test_dummy_home_page_uses_demo_title_only
