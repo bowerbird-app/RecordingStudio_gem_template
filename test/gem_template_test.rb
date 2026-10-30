@@ -50,11 +50,13 @@ class GemTemplateTest < Minitest::Test
     refute_includes gemfile, 'tag: "v4.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false'
-    refute_includes gemfile, 'tag: "v0.10.0"'
     refute_includes gemfile, 'tag: "v0.17.0"'
     refute_includes gemfile, 'tag: "v0.15.0"'
     refute_includes gemfile, 'tag: "v0.10.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.10.0"'
+    refute_includes gemfile, 'tag: "v0.9.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.3.1"'
+    refute_includes gemfile, 'tag: "v0.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
@@ -216,11 +218,13 @@ class GemTemplateTest < Minitest::Test
     refute_includes readme, "dummy GitHub tag `v0.1.196`"
     assert_includes readme, "dummy GitHub tag `v0.18.0`"
     assert_includes readme, "dummy GitHub tag `v0.11.0`"
-    refute_includes readme, "dummy GitHub tag `v0.10.0`"
+    assert_includes readme, "dummy GitHub tag `v0.10.0`"
+    refute_includes readme, "dummy GitHub tag `v0.9.0`"
+    assert_includes readme, "dummy GitHub tag `v0.3.1`"
+    refute_includes readme, "dummy GitHub tag `v0.2.0`"
     refute_includes readme, "dummy GitHub tag `v0.17.0`"
     refute_includes readme, "dummy GitHub tag `v0.15.0`"
     refute_includes readme, "dummy GitHub tag `v0.10.1`"
-    assert_includes readme, "dummy GitHub tag `v0.9.0`"
     refute_includes readme, "dummy GitHub tag `v0.8.0`"
     refute_includes readme, "dummy GitHub tag `v0.6.0`"
     refute_includes readme, "dummy GitHub tag `v0.5.1`"
@@ -250,6 +254,12 @@ class GemTemplateTest < Minitest::Test
     refute_includes installing, "flatpack/app/components"
     assert_includes installing, "bin/rails generate flat_pack:install"
     assert_includes installing, '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";'
+
+    importmap = File.read(File.expand_path("dummy/config/importmap.rb", __dir__))
+    stimulus_loader = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
+    refute_includes importmap, "recording_studio_root_switchable"
+    refute_includes stimulus_loader, "recording_studio_root_switchable"
+    refute File.exist?(File.expand_path("dummy/app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__))
   end
 
   def test_dummy_home_page_uses_demo_title_only

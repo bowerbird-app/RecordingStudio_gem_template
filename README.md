@@ -162,7 +162,8 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.7.1`) |
 | Accessible      | dummy GitHub tag `v0.18.0` |
 | Trashable       | dummy GitHub tag `v0.11.0` (`require: false`; query-only via Accessible) |
-| Root Switchable | dummy GitHub tag `v0.9.0` |
+| Root Switchable | dummy GitHub tag `v0.10.0` |
+| Metrics         | dummy GitHub tag `v0.3.1` |
 | FlatPack        | dummy GitHub tag `v0.1.331` |
 | Devise          | latest  |
 

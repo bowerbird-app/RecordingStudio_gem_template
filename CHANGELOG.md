@@ -19,10 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The install generator adds only GemTemplate view `@source` lines. FlatPack Tailwind sources are no longer written here.
 - CI lint and security jobs install Ruby `3.3` (latest patch). `ubuntu-latest` no longer has a Ruby 3.3.6 build, so reading `.ruby-version` failed before RuboCop, Brakeman, Bundler Audit, or Importmap Audit could run.
 - Dummy `net-ssh` `7.3.3` → `7.3.8` and root plus dummy `crass` `1.0.7` → `1.0.8`. Dummy FlatPack `v0.1.196` → `v0.1.331`, which requires `view_component` `>= 4.14`, `< 5`, so `GHSA-8qw7-6phv-7q6p` is no longer ignored. Root and dummy Recording Studio `v4.7.0` → `v4.7.1` so the default layout calls FlatPack page nav with `with_back`, `with_close`, and `with_item`.
+- Dummy Root Switchable `v0.9.0` → `v0.10.0` and Metrics `v0.2.0` → `v0.3.1`. The copied root-switch page is removed. `v0.10.0` already closes with `with_close` and renders a card without `style:`. It also drops the Stimulus importmap pin for `controllers/recording_studio_root_switchable`.
 
 ### Upgrade notes
-- First remove both previously generated FlatPack `@source` lines and their comment. Then run `bin/rails generate flat_pack:install`, which writes them.
-- Point the dummy FlatPack pin at `v0.1.331` and run `bundle update flat_pack view_component`. Drop `style:` on `FlatPack::Card::Component`. That keyword raises `ArgumentError`. Point host and dummy Gemfiles at Recording Studio `v4.7.1`. `FlatPack::PageNav::Component` no longer accepts `back_icon`, `anchor_label`, or `right_slot`. The dummy root-switch page uses `with_close` and a card without `style:`.
+- Hosts: first remove both previously generated FlatPack `@source` lines and their comment. Then run `bin/rails generate flat_pack:install`, which writes them.
+- Hosts: drop `style:` on `FlatPack::Card::Component`. That keyword raises `ArgumentError`. Point the host Gemfile at Recording Studio `v4.7.1`. `FlatPack::PageNav::Component` no longer accepts `back_icon`, `anchor_label`, or `right_slot`.
+- Dummy: point FlatPack at `v0.1.331` and run `bundle update flat_pack view_component`. Point Root Switchable at `v0.10.0` and Metrics at `v0.3.1`, then `bundle update recording_studio_root_switchable recording_studio_metrics`. Root Switchable `v0.10.0` no longer ships the Stimulus pin for `controllers/recording_studio_root_switchable`. This dummy importmap does not pin it. The `v0.10.0` dropdown template still calls `button_attributes`, which FlatPack `0.1.319` removed, so the dummy nav draws those rows with `FlatPack::Button::Dropdown`.
 
 ## [0.2.3] - 2026-10-01
 

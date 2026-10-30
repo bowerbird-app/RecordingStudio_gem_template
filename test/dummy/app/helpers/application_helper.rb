@@ -7,7 +7,7 @@ module ApplicationHelper
     )
 
     recording_studio_page_nav_right do
-      concat recording_studio_root_switch_dropdown(style: :ghost, size: :md)
+      concat dummy_root_switch_dropdown
       concat render(
         FlatPack::Button::Component.new(
           text: "Sign out",
@@ -18,5 +18,23 @@ module ApplicationHelper
         )
       )
     end
+  end
+
+  # Root Switchable 0.10.0's dropdown template calls button_attributes.
+  # FlatPack 0.1.319 removed that method, so draw the same rows on the current dropdown.
+  def dummy_root_switch_dropdown
+    menu_rows = recording_studio_root_switch_menu_rows
+    return if menu_rows.blank?
+
+    dropdown = FlatPack::Button::Dropdown::Component.new(
+      text: menu_rows.current_label,
+      disabled: menu_rows.switch_rows.empty?,
+      style: :ghost,
+      size: :md
+    )
+    dropdown.menu_html(
+      render(RecordingStudioRootSwitchable::RootSwitch::RowsComponent.new(menu_rows: menu_rows))
+    )
+    render(dropdown)
   end
 end
