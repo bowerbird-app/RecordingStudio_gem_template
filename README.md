@@ -139,7 +139,7 @@ Use core `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService`. 
 All views use FlatPack ViewComponents. Available components include:
 
 - `FlatPack::Button::Component` — Buttons (`:primary`, `:secondary`, `:ghost`)
-- `FlatPack::Card::Component` — Cards (`:default`, `:elevated`, `:outlined`)
+- `FlatPack::Card::Component` — Cards
 - `FlatPack::Alert::Component` — Alerts (`:success`, `:error`, `:warning`, `:info`)
 - `FlatPack::Badge::Component` — Status badges
 - `FlatPack::Table::Component` — Data tables
@@ -159,11 +159,11 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
-| RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.7.0`) |
+| RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.7.1`) |
 | Accessible      | dummy GitHub tag `v0.18.0` |
 | Trashable       | dummy GitHub tag `v0.11.0` (`require: false`; query-only via Accessible) |
 | Root Switchable | dummy GitHub tag `v0.9.0` |
-| FlatPack        | dummy GitHub tag `v0.1.196` |
+| FlatPack        | dummy GitHub tag `v0.1.331` |
 | Devise          | latest  |
 
 The dummy Gemfile keeps `github:` sources so Bundler can fetch those gems. The gemspec still pins `recording_studio` to `~> 4.2` so copied addons declare the core dependency even when GitHub is the fetch source.

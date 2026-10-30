@@ -18,10 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The install generator adds only GemTemplate view `@source` lines. FlatPack Tailwind sources are no longer written here.
 - CI lint and security jobs install Ruby `3.3` (latest patch). `ubuntu-latest` no longer has a Ruby 3.3.6 build, so reading `.ruby-version` failed before RuboCop, Brakeman, Bundler Audit, or Importmap Audit could run.
-- Dummy `net-ssh` `7.3.3` → `7.3.8` and root plus dummy `crass` `1.0.7` → `1.0.8`. `GHSA-8qw7-6phv-7q6p` stays ignored: FlatPack `v0.1.196` pins `view_component` to `~> 4.12.0`, and the patched release is `4.14.0`.
+- Dummy `net-ssh` `7.3.3` → `7.3.8` and root plus dummy `crass` `1.0.7` → `1.0.8`. Dummy FlatPack `v0.1.196` → `v0.1.331`, which requires `view_component` `>= 4.14`, `< 5`, so `GHSA-8qw7-6phv-7q6p` is no longer ignored. Root and dummy Recording Studio `v4.7.0` → `v4.7.1` so the default layout calls FlatPack page nav with `with_back`, `with_close`, and `with_item`.
 
 ### Upgrade notes
-- Run `bin/rails generate flat_pack:install` so FlatPack writes its own Tailwind `@source` lines. Remove any FlatPack `@source` lines a previous GemTemplate install added if they duplicate that installer.
+- First remove both previously generated FlatPack `@source` lines and their comment. Then run `bin/rails generate flat_pack:install`, which writes them.
+- Point the dummy FlatPack pin at `v0.1.331` and run `bundle update flat_pack view_component`. Drop `style:` on `FlatPack::Card::Component`. That keyword raises `ArgumentError`. Point host and dummy Gemfiles at Recording Studio `v4.7.1`. `FlatPack::PageNav::Component` no longer accepts `back_icon`, `anchor_label`, or `right_slot`. The dummy root-switch page uses `with_close` and a card without `style:`.
 
 ## [0.2.3] - 2026-10-01
 
@@ -125,7 +126,7 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.11...HEAD
 [0.2.11]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.10...v0.2.11
 [0.2.3]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.3
 [0.2.2]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.2

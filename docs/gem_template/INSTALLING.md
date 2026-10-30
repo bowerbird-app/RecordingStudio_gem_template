@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** May 5, 2026
+> *   **Last Updated:** October 30, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -53,7 +53,7 @@ This will:
 1. **Mount the engine** at `/gem_template` in your `config/routes.rb`
 2. **Create a configuration initializer** at `config/initializers/gem_template.rb`
 3. **Optionally create `config/gem_template.yml`** for environment-specific settings
-4. **Configure Tailwind** to include engine and FlatPack sources (if Tailwind is detected)
+4. **Configure Tailwind** to include GemTemplate engine views (if Tailwind is detected). FlatPack sources come from `bin/rails generate flat_pack:install`
 5. **Display post-installation instructions**
 
 ---
@@ -84,12 +84,13 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all options.
 
 ### Tailwind CSS
 
-If your app uses Tailwind, the generator adds `@source` directives to include engine views and FlatPack components:
+If your app uses Tailwind, the generator adds a `@source` directive for GemTemplate engine views:
 
 ```css
 @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
-@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
 ```
+
+FlatPack writes its own sources. Run `bin/rails generate flat_pack:install`.
 
 This ensures Tailwind scans the engine's templates for class names during CSS compilation.
 
@@ -128,8 +129,9 @@ Add to your `app/assets/tailwind/application.css`:
 
 ```css
 @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
-@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
 ```
+
+FlatPack writes its own sources. Run `bin/rails generate flat_pack:install`.
 
 Then rebuild:
 
@@ -196,7 +198,7 @@ The `gem_template` helper provides access to all engine routes.
 
 ## RecordingStudio Host-App Check
 
-This template's dummy app uses RecordingStudio `v4.7.0` (`~> 4.2` in the gemspec). Keep
+This template's dummy app uses RecordingStudio `v4.7.1` (`~> 4.2` in the gemspec). Keep
 `config.require_recordable_declarations = true`, declare every configured recordable with
 `recording_studio_recordable(...)`, and create roots with `RecordingStudio.root_recording_for(recordable)`.
 Child recordings must be created with an explicit `parent_recording`.
@@ -204,7 +206,7 @@ Child recordings must be created with an explicit `parent_recording`.
 When Accessible is bundled, pin the dummy or host Gemfile to `v0.18.0`, pin
 `recording_studio_trashable` to `v0.11.0` with `require: false` (Accessible loads the
 query helpers only), run `bin/rails generate recording_studio_accessible:migrations`,
-migrate, and rebuild Tailwind after bumping FlatPack (`v0.1.196`). Accessible `0.11.0+`
+migrate, and rebuild Tailwind after bumping FlatPack (`v0.1.331`). Accessible `0.11.0+`
 stores access roles as strings (`view` / `edit` / `admin`); hosts upgrading past that
 release need the role-column migration. Accessible `0.14.0+` adds access constraint and
 access rule tables for optional action audiences; English hosts need no copy changes for
