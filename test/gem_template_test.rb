@@ -4,7 +4,7 @@ require "test_helper"
 
 class GemTemplateTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.10", ::GemTemplate::VERSION
+    assert_equal "0.2.11", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
@@ -44,20 +44,24 @@ class GemTemplateTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_4x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.7.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.7.1"'
+    refute_includes gemfile, 'tag: "v4.7.0"'
     refute_includes gemfile, 'tag: "v4.6.0"'
     refute_includes gemfile, 'tag: "v4.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false'
-    refute_includes gemfile, 'tag: "v0.10.0"'
     refute_includes gemfile, 'tag: "v0.17.0"'
     refute_includes gemfile, 'tag: "v0.15.0"'
     refute_includes gemfile, 'tag: "v0.10.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.10.0"'
+    refute_includes gemfile, 'tag: "v0.9.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.3.1"'
+    refute_includes gemfile, 'tag: "v0.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.331"'
+    refute_includes gemfile, 'tag: "v0.1.196"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.4.0"'
     refute_includes gemfile, 'tag: "v4.3.0"'
@@ -206,17 +210,21 @@ class GemTemplateTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v4.7.0`"
+    assert_includes readme, "dummy GitHub tag `v4.7.1`"
+    refute_includes readme, "dummy GitHub tag `v4.7.0`"
     refute_includes readme, "dummy GitHub tag `v4.6.0`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
-    assert_includes readme, "dummy GitHub tag `v0.1.196`"
+    assert_includes readme, "dummy GitHub tag `v0.1.331`"
+    refute_includes readme, "dummy GitHub tag `v0.1.196`"
     assert_includes readme, "dummy GitHub tag `v0.18.0`"
     assert_includes readme, "dummy GitHub tag `v0.11.0`"
-    refute_includes readme, "dummy GitHub tag `v0.10.0`"
+    assert_includes readme, "dummy GitHub tag `v0.10.0`"
+    refute_includes readme, "dummy GitHub tag `v0.9.0`"
+    assert_includes readme, "dummy GitHub tag `v0.3.1`"
+    refute_includes readme, "dummy GitHub tag `v0.2.0`"
     refute_includes readme, "dummy GitHub tag `v0.17.0`"
     refute_includes readme, "dummy GitHub tag `v0.15.0`"
     refute_includes readme, "dummy GitHub tag `v0.10.1`"
-    assert_includes readme, "dummy GitHub tag `v0.9.0`"
     refute_includes readme, "dummy GitHub tag `v0.8.0`"
     refute_includes readme, "dummy GitHub tag `v0.6.0`"
     refute_includes readme, "dummy GitHub tag `v0.5.1`"
@@ -232,6 +240,43 @@ class GemTemplateTest < Minitest::Test
     refute_includes readme, "RecordingStudio v3"
     refute_includes readme, "ExampleService"
     refute_includes readme, "recording_studio/v3.0.0"
+  end
+
+  def test_dummy_drops_removed_card_style_and_view_component_advisory
+    home = File.read(File.expand_path("dummy/app/views/home/index.html.erb", __dir__))
+    login = File.read(File.expand_path("dummy/app/views/devise/sessions/new.html.erb", __dir__))
+    audit = File.read(File.expand_path("dummy/config/bundler-audit.yml", __dir__))
+    installing = File.read(File.expand_path("../docs/gem_template/INSTALLING.md", __dir__))
+
+    refute_match(/FlatPack::Card::Component\.new\([^)]*style:/, home)
+    refute_match(/FlatPack::Card::Component\.new\([^)]*style:/, login)
+    refute_includes audit, "GHSA-8qw7-6phv-7q6p"
+    refute_includes installing, "flatpack/app/components"
+    assert_includes installing, "bin/rails generate flat_pack:install"
+    assert_includes installing, '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";'
+
+    importmap = File.read(File.expand_path("dummy/config/importmap.rb", __dir__))
+    stimulus_loader = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
+    refute_includes importmap, "recording_studio_root_switchable"
+    refute_includes stimulus_loader, "recording_studio_root_switchable"
+    copied_root_switch = File.expand_path(
+      "dummy/app/views/recording_studio_root_switchable/root_switches/show.html.erb",
+      __dir__
+    )
+    refute File.exist?(copied_root_switch)
+  end
+
+  def test_dummy_root_switch_dropdown_renders_rows_on_flatpack
+    helper = File.read(File.expand_path("dummy/app/helpers/application_helper.rb", __dir__))
+
+    assert_includes helper, "recording_studio_root_switch_list_for"
+    assert_includes helper, "FlatPack::Button::Dropdown::Component"
+    assert_includes helper, "RowsComponent.new(menu_rows: list.menu_rows)"
+    assert_includes helper, "temporary shim"
+    refute_includes helper, "recording_studio_root_switch_menu_rows"
+    refute_includes helper, "menu_html(render(list))"
+    refute_includes helper, "class_eval"
+    refute_includes helper, "prepend"
   end
 
   def test_dummy_home_page_uses_demo_title_only

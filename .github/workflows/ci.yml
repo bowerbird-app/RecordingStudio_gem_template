@@ -27,7 +27,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: .ruby-version
+          # ubuntu-latest only publishes the latest 3.3 patch. .ruby-version is 3.3.6, which 404s there.
+          ruby-version: "3.3"
           bundler-cache: true
 
       - name: Prepare RuboCop cache
