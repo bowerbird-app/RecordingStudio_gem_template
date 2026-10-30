@@ -20,8 +20,10 @@ module ApplicationHelper
     end
   end
 
-  # Root Switchable 0.10.0's dropdown template calls button_attributes, which
-  # FlatPack 0.1.319 removed. The public list helper still returns those rows.
+  # TODO: temporary shim. Root Switchable v0.10.0's dropdown template calls
+  # FlatPack's button_attributes, which was removed in FlatPack v0.1.320.
+  # The fix is in Root Switchable v0.11.0+, which needs recording_studio >= 6.1.
+  # Remove the shim once a Root Switchable 0.10.x fix ships or the dummy moves to RS 6.x.
   def dummy_root_switch_dropdown
     list = recording_studio_root_switch_list_for
     return if list.blank?
@@ -32,7 +34,9 @@ module ApplicationHelper
       style: :ghost,
       size: :md
     )
-    dropdown.menu_html(render(list))
+    dropdown.menu_html(
+      render(RecordingStudioRootSwitchable::RootSwitch::RowsComponent.new(menu_rows: list.menu_rows))
+    )
     render(dropdown)
   end
 end

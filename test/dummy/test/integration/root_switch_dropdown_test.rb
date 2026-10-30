@@ -27,13 +27,17 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
+    other_workspace = Workspace.create!(name: "Zzz Switch Target")
     RecordingStudio.root_recording_for(workspace)
+    RecordingStudio.root_recording_for(other_workspace)
 
     get root_path
 
     assert_response :success
     assert_includes response.body, workspace.name
     assert_select "body[data-recording-studio-default-layout='true']", count: 1
+    switch_forms = css_select("form").select { |form| patch_switch_form?(form, other_workspace.name) }
+    assert_predicate switch_forms, :any?
   end
 
   test "root switch page renders with the host default layout" do
@@ -100,5 +104,11 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to "/"
+  end
+
+  def patch_switch_form?(form, label)
+    return false unless form.text.include?(label)
+
+    form["method"].to_s.casecmp("patch").zero? || form.at_css("input[name='_method'][value='patch']")
   end
 end
