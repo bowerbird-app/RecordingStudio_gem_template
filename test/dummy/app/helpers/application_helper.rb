@@ -20,21 +20,19 @@ module ApplicationHelper
     end
   end
 
-  # Root Switchable 0.10.0's dropdown template calls button_attributes.
-  # FlatPack 0.1.319 removed that method, so draw the same rows on the current dropdown.
+  # Root Switchable 0.10.0's dropdown template calls button_attributes, which
+  # FlatPack 0.1.319 removed. The public list helper still returns those rows.
   def dummy_root_switch_dropdown
-    menu_rows = recording_studio_root_switch_menu_rows
-    return if menu_rows.blank?
+    list = recording_studio_root_switch_list_for
+    return if list.blank?
 
     dropdown = FlatPack::Button::Dropdown::Component.new(
-      text: menu_rows.current_label,
-      disabled: menu_rows.switch_rows.empty?,
+      text: list.menu_rows.current_label,
+      disabled: list.menu_rows.switch_rows.empty?,
       style: :ghost,
       size: :md
     )
-    dropdown.menu_html(
-      render(RecordingStudioRootSwitchable::RootSwitch::RowsComponent.new(menu_rows: menu_rows))
-    )
+    dropdown.menu_html(render(list))
     render(dropdown)
   end
 end

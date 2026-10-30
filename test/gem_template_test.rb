@@ -266,6 +266,17 @@ class GemTemplateTest < Minitest::Test
     refute File.exist?(copied_root_switch)
   end
 
+  def test_dummy_root_switch_dropdown_uses_the_public_list_on_flatpack
+    helper = File.read(File.expand_path("dummy/app/helpers/application_helper.rb", __dir__))
+
+    assert_includes helper, "recording_studio_root_switch_list_for"
+    assert_includes helper, "FlatPack::Button::Dropdown::Component"
+    refute_includes helper, "recording_studio_root_switch_menu_rows"
+    refute_includes helper, "RowsComponent"
+    refute_includes helper, "class_eval"
+    refute_includes helper, "prepend"
+  end
+
   def test_dummy_home_page_uses_demo_title_only
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
