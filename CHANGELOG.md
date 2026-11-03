@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Dummy page nav Sign out button: FlatPack `Button` `url:` → `href:` so it renders a link instead of a dead `<button url="…">`.
 - Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
 
 ### Upgrade notes
