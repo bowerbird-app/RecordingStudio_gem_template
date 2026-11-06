@@ -7,12 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-11-06
+
 ### Changed
-- Dummy page nav Sign out button: FlatPack `Button` `url:` → `href:` so it renders a link instead of a dead `<button url="…">`.
-- Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
+- Root and dummy lockfiles: Rails `8.1.4` → `8.1.4.1`, rack `3.2.7` → `3.2.8`, nokogiri `1.19.4` → `1.19.7`, loofah `2.25.2` → `2.25.3`, rails-html-sanitizer `1.7.1` → `1.7.2`. Dummy `net-ssh` stays `7.3.8`.
 
 ### Upgrade notes
-- Point host and dummy Gemfiles at Recording Studio `v4.2.2`.
+- Refresh host lockfiles to Rails `8.1.4.1` (and rack `>= 3.2.8`, nokogiri `>= 1.19.5`, loofah `>= 2.25.3`, rails-html-sanitizer `>= 1.7.2`). `bundle update rails rack nokogiri loofah rails-html-sanitizer --conservative` is enough.
 
 ## [0.2.11] - 2026-10-29
 
@@ -129,7 +130,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.11...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.12...HEAD
+[0.2.12]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/bowerbird-app/RecordingStudio_gem_template/compare/v0.2.10...v0.2.11
 [0.2.3]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.3
 [0.2.2]: https://github.com/bowerbird-app/RecordingStudio_gem_template/releases/tag/v0.2.2
