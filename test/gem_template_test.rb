@@ -4,7 +4,7 @@ require "test_helper"
 
 class GemTemplateTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.11", ::GemTemplate::VERSION
+    assert_equal "0.2.12", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
