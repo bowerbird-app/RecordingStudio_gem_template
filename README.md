@@ -1,16 +1,16 @@
 # GemTemplate
 
-Internal template for building Rails engine addons on top of Recording Studio 4.x.
+Internal template for building Rails engine addons on top of Recording Studio 7.
 
 ## What's Included
 
-- **Recording Studio** 4.x gem pinned and configured
+- **Recording Studio** 7 gem pinned and configured
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
 - **FlatPack** UI component library for all views
 - **Dummy app** (`test/dummy/`) with a FlatPack sign-in screen, a home page on Recording Studio's default layout, mounted Recording Studio routes, and FlatPack's built-in rounded theme
 
-Authenticated dummy pages use Recording Studio's shared default layout (`RecordingStudio::UsesDefaultLayout`) plus FlatPack CSS and JS. Devise keeps its own sign-in layout. Dummy `/docs/*` pages stay in the dummy app as a host-app sandbox; they are not the product README.
+Authenticated dummy pages use Recording Studio's shared default layout. Controllers opt in with `recording_studio_layout`. The shell is FlatPack's page layout and top nav, plus FlatPack CSS and JS. Devise keeps its own sign-in layout. Dummy `/docs/*` pages stay in the dummy app as a host-app sandbox. They are not the product README.
 
 ## Quick Start
 
@@ -92,7 +92,7 @@ To add new recordable types:
 4. Validate declarations and create recordings under the root:
    ```ruby
    RecordingStudio.validate_recordable_declarations!
-   root_recording = RecordingStudio.root_recording_for(workspace)
+   root_recording = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
    root_recording.record(YourNewType) do |record|
      record.title = "Example"
    end
@@ -124,7 +124,7 @@ The dummy Workspace enables Accessible because that addon is bundled:
 RecordingStudio.enable_capability(:accessible, on: Workspace)
 ```
 
-The template also ships one example mixin that uses core 4.2.0's `include_for` factory:
+The template also ships one example mixin that uses core `include_for`:
 
 ```ruby
 include RecordingStudio::Capabilities::Example.to(label: "dummy workspace")
@@ -144,7 +144,7 @@ All views use FlatPack ViewComponents. Available components include:
 - `FlatPack::Badge::Component` — Status badges
 - `FlatPack::Table::Component` — Data tables
 - `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::PageNav::Component` — Default-layout page navigation
+- `FlatPack::PageLayout` and `FlatPack::TopNav` — the shared default layout shell
 - `FlatPack::PageTitle::Component` — Page titles
 
 Use the live FlatPack demo app at [flatpack.bowerbird.io](https://flatpack.bowerbird.io/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI.
@@ -159,15 +159,18 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
-| RecordingStudio | 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.7.1`) |
-| Accessible      | dummy GitHub tag `v0.18.0` |
-| Trashable       | dummy GitHub tag `v0.11.0` (`require: false`; query-only via Accessible) |
-| Root Switchable | dummy GitHub tag `v0.10.0` |
-| Metrics         | dummy GitHub tag `v0.3.1` |
-| FlatPack        | dummy GitHub tag `v0.1.331` |
+| RecordingStudio | 7 (`>= 7.0, < 8.0` in the gemspec; dummy GitHub tag `v7.0.0`) |
+| Accessible      | dummy GitHub tag `v0.44.1` |
+| Trashable       | dummy GitHub tag `v0.17.0` (`require: false`; Accessible loads kept queries) |
+| Root Switchable | dummy GitHub tag `v0.16.0` |
+| Metrics         | dummy GitHub tag `v0.9.0` |
+| Cache           | dummy GitHub tag `v0.7.0` |
+| FlatPack        | dummy GitHub tag `v0.1.376` (root Gemfile and dummy Gemfile) |
 | Devise          | latest  |
 
-The dummy Gemfile keeps `github:` sources so Bundler can fetch those gems. The gemspec still pins `recording_studio` to `~> 4.2` so copied addons declare the core dependency even when GitHub is the fetch source.
+The dummy Gemfile keeps `github:` sources so Bundler can fetch those gems. The gemspec pins `recording_studio` to `>= 7.0, < 8.0`. FlatPack is not on RubyGems, so the root Gemfile pins it too. Core 7 depends on it.
+
+Look up a root with `RecordingStudio.root_recording_for`. It returns `nil` when the root is missing. Create one with `RecordingStudio.create_root_recording!(recordable, actor:)`. Set `config.authorize_write` and pass an actor. Do not set `allow_unauthorized_writes`. The root switcher page also needs Accessible `:view` on the current root. Seeds grant that with `bootstrap_owner_access!`. Use `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService` from core.
 
 ## Documentation
 

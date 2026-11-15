@@ -19,6 +19,11 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     end
 
     sign_in @user
+    Current.actor = @user
+  end
+
+  teardown do
+    Current.actor = nil
   end
 
   test "install page renders successfully" do
@@ -73,7 +78,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "recordings tree page renders successfully" do
     workspace = Workspace.create!(name: "Tree Workspace")
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: @user)
     folder = Folder.create!(name: "Reference")
     folder_recording = record_child(folder, root_recording, root_recording)
     page = Page.create!(title: "API")
@@ -87,7 +92,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Folder: Reference"
     assert_includes response.body, "Page: API"
     refute_includes response.body, "Access boundary"
-    refute_includes response.body, "Access: Admin"
+    refute_match(/Access: Admin(?! for )/, response.body)
     assert_select "div[role='tree']", count: 1
     assert_select "[role='treeitem']", minimum: 3
     refute_includes response.body, "Current structure"
@@ -118,7 +123,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "body[data-recording-studio-default-layout='true']", count: 1
-    assert_select "nav[aria-label='Page navigation']", count: 1
+    assert_select "header.fp-top-nav", count: 1
     refute_includes response.body, "flat-pack-sidebar-layout"
   end
 
@@ -132,10 +137,13 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     workspace = Workspace.create!(name: "Counted Workspace")
     2.times do
-      RecordingStudio.root_recording_for(Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"))
+      RecordingStudio.create_root_recording!(
+        Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"),
+        actor: @user
+      )
     end
 
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: @user)
     folder = Folder.create!(name: "Counted Folder")
     record_child(folder, root_recording, root_recording)
 

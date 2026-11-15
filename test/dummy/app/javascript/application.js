@@ -2,3 +2,13 @@
 import "controllers"
 import { application } from "controllers/application"
 
+
+import { initLocalTimes } from "flat_pack/local_time"
+
+document.addEventListener("DOMContentLoaded", () => {
+  initLocalTimes()
+})
+
+document.addEventListener("turbo:load", () => {
+  initLocalTimes()
+})

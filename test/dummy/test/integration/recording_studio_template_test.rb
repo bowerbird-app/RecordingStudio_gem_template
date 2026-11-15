@@ -5,9 +5,10 @@ require "test_helper"
 class RecordingStudioTemplateTest < ActiveSupport::TestCase
   test "dummy app loads root switchable config and controller support" do
     assert_equal [ "all_workspaces" ], RecordingStudioRootSwitchable.configuration.scopes.keys
-    assert_equal :application_layout, RecordingStudioRootSwitchable.configuration.layout
+    assert_nil RecordingStudioRootSwitchable.configuration.layout
     assert_includes ApplicationController.ancestors, RecordingStudio::RootSwitchable::ControllerSupport
-    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
+    assert_respond_to ApplicationController, :recording_studio_layout
+    refute_includes ApplicationController.instance_methods, :application_layout
   end
 
   test "dummy app validates recordable declarations" do
@@ -20,6 +21,7 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     connection = ActiveRecord::Base.connection
 
     assert connection.column_exists?(:recording_studio_recordings, :root_recording_id)
+    assert connection.column_exists?(:recording_studio_events, :root_recording_id)
     assert connection.table_exists?(:recording_studio_accesses)
     assert connection.table_exists?(:recording_studio_access_constraints)
     assert connection.table_exists?(:recording_studio_access_rules)
@@ -55,7 +57,9 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
 
     assert_no_difference -> { User.count } do
       assert_no_difference -> { RecordingStudio::Recording.count } do
-        load Rails.root.join("db/seeds.rb").to_s
+        assert_no_difference -> { RecordingStudio::Event.count } do
+          load Rails.root.join("db/seeds.rb").to_s
+        end
       end
     end
     assert_nil Current.actor
@@ -80,6 +84,6 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     refute RecordingStudio.capability_enabled?(:example, for: Folder)
     refute RecordingStudio.capability_enabled?(:example, for: Page)
     assert_equal [ "Workspace" ], RecordingStudio.configuration.enabled_recordable_types_for(:example)
-    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
+    assert_respond_to ApplicationController, :recording_studio_layout
   end
 end

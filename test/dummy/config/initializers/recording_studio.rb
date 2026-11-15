@@ -13,6 +13,11 @@ RecordingStudio.configure do |config|
   # Actor resolver for events when no actor is explicitly supplied
   config.actor = -> { Current.actor }
 
+  # Writes fail closed until this returns truthy. Do not set
+  # allow_unauthorized_writes. create_root_recording! calls this with
+  # root_recording nil. A present actor may write in this demo host.
+  config.authorize_write = ->(actor:, **) { actor.present? }
+
   # Emit ActiveSupport::Notifications events
   config.event_notifications_enabled = true
 

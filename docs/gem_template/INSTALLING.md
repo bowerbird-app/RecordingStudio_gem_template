@@ -198,20 +198,21 @@ The `gem_template` helper provides access to all engine routes.
 
 ## RecordingStudio Host-App Check
 
-This template's dummy app uses RecordingStudio `v4.7.1` (`~> 4.2` in the gemspec). Keep
-`config.require_recordable_declarations = true`, declare every configured recordable with
-`recording_studio_recordable(...)`, and create roots with `RecordingStudio.root_recording_for(recordable)`.
-Child recordings must be created with an explicit `parent_recording`.
+This template's dummy app uses Recording Studio `v7.0.0` (`>= 7.0, < 8.0` in the gemspec) and FlatPack `v0.1.376`. Keep `config.require_recordable_declarations = true` and declare every configured recordable with `recording_studio_recordable(...)`.
 
-When Accessible is bundled, pin the dummy or host Gemfile to `v0.18.0`, pin
-`recording_studio_trashable` to `v0.11.0` with `require: false` (Accessible loads the
-query helpers only), run `bin/rails generate recording_studio_accessible:migrations`,
-migrate, and rebuild Tailwind after bumping FlatPack (`v0.1.331`). Accessible `0.11.0+`
-stores access roles as strings (`view` / `edit` / `admin`); hosts upgrading past that
-release need the role-column migration. Accessible `0.14.0+` adds access constraint and
-access rule tables for optional action audiences; English hosts need no copy changes for
-the `0.15.0` i18n wave. Accessible `0.17.0` soft-trash filters use Trashable kept SQL
-instead of `where(trashed_at: nil)`.
+Look up a root with `RecordingStudio.root_recording_for(recordable)`. It returns `nil` when that recordable has no root. Create one with `RecordingStudio.create_root_recording!(recordable, actor:)`. Child recordings still need an explicit `parent_recording`. Set `config.authorize_write` so a present actor may write. Do not set `allow_unauthorized_writes`.
+
+Opt authenticated controllers in with `recording_studio_layout`. `RecordingStudio::UsesDefaultLayout`, `recording_studio/action_layout`, and `recording_studio_page_nav` are gone. The default layout is FlatPack's page layout. Put the page heading in `content_for :title` and back or close in `flat_pack_page_nav`. `recording_studio_page_nav_right` still fills the right side of the top nav.
+
+When Accessible is bundled, pin the dummy or host Gemfile to `v0.44.1` and pin `recording_studio_trashable` to `v0.17.0` with `require: false`. Set `config.access_management_actor_scope`. Run `bin/rails generate recording_studio:migrations` and `bin/rails generate recording_studio_accessible:migrations`, then `bin/rails db:migrate`. Do not hand-edit those tables. Core 6.9 adds `recording_studio_events.root_recording_id`. `events_query` no longer accepts `offset:`. Pass `cursor:` instead.
+
+The root switcher page requires Accessible `:view` on the current root. Grant the first owner with `RecordingStudioAccessible.bootstrap_owner_access!(recording:, actor:)`. A host authorizer cannot skip that check.
+
+Kept rows are `RecordingStudio::Recording.kept`. Trashable 0.16 removed `recording_studio_trashable_kept_sql`.
+
+Run `bin/rails generate flat_pack:install` after a FlatPack bump so the importmap picks up the current pins, then `bin/rails tailwindcss:build`.
+
+Use `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService` from core. Do not copy those classes into a new addon.
 
 ---
 
