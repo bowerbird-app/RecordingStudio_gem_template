@@ -9,7 +9,7 @@ module RecordingStudio
     #
     # Installing this gem does not enable the mixin on any type. `.to` wraps
     # RecordingStudio::Capabilities.include_for so enablement and options stay
-    # on the same factory as core 4.2.0.
+    # on that factory.
     module Example
       def self.to(**)
         RecordingStudio::Capabilities.include_for(:example, **)

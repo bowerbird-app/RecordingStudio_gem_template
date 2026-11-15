@@ -4,17 +4,18 @@ require "test_helper"
 
 class GemTemplateTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.13", ::GemTemplate::VERSION
+    assert_equal "0.3.0", ::GemTemplate::VERSION
   end
 
   def test_engine_exists
     assert_kind_of Class, ::GemTemplate::Engine
   end
 
-  def test_gemspec_pins_recording_studio_4_2
+  def test_gemspec_pins_recording_studio_7
     gemspec = File.read(File.expand_path("../gem_template.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
+    refute_includes gemspec, '"~> 4.2"'
   end
 
   def test_gemspec_excludes_cursor_config
@@ -41,38 +42,31 @@ class GemTemplateTest < Minitest::Test
     assert_includes install_script, "fetch-skills.sh"
   end
 
-  def test_dummy_gemfile_pins_verified_4x_github_tags
+  def test_gemfiles_pin_core_7_cohort
+    root = File.read(File.expand_path("../Gemfile", __dir__))
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.7.1"'
+    assert_includes root, 'github: "bowerbird-app/flatpack", tag: "v0.1.376"'
+    assert_includes root, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
+    refute_includes root, 'tag: "v4.7.1"'
+
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
+    refute_includes gemfile, 'tag: "v4.7.1"'
     refute_includes gemfile, 'tag: "v4.7.0"'
-    refute_includes gemfile, 'tag: "v4.6.0"'
-    refute_includes gemfile, 'tag: "v4.5.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false'
-    refute_includes gemfile, 'tag: "v0.17.0"'
-    refute_includes gemfile, 'tag: "v0.15.0"'
-    refute_includes gemfile, 'tag: "v0.10.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.10.0"'
-    refute_includes gemfile, 'tag: "v0.9.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.3.1"'
-    refute_includes gemfile, 'tag: "v0.2.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
-    refute_includes gemfile, 'tag: "v0.6.0"'
-    refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.331"'
-    refute_includes gemfile, 'tag: "v0.1.196"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.44.1"'
+    refute_includes gemfile, 'tag: "v0.18.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.17.0", require: false'
+    refute_includes gemfile, 'tag: "v0.11.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.16.0"'
+    refute_includes gemfile, 'tag: "v0.10.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0"'
+    refute_includes gemfile, 'tag: "v0.3.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.7.0"'
+    refute_includes gemfile, 'tag: "v0.5.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.376"'
+    refute_includes gemfile, 'tag: "v0.1.331"'
     refute_includes gemfile, "recording_studio/v3.0.0"
-    refute_includes gemfile, 'tag: "v4.4.0"'
-    refute_includes gemfile, 'tag: "v4.3.0"'
-    refute_includes gemfile, 'tag: "v4.2.2"'
-    refute_includes gemfile, 'tag: "v4.2.1"'
-    refute_includes gemfile, 'tag: "v4.2.0"'
-    refute_includes gemfile, 'tag: "v0.9.1"'
-    refute_includes gemfile, 'tag: "v0.8.0"'
-    refute_includes gemfile, 'tag: "v0.1.177"'
-    refute_includes gemfile, 'tag: "v0.1.133"'
-    refute_includes gemfile, 'tag: "0.3.1"'
+    refute_includes gemfile, "allow_unauthorized_writes"
   end
 
   def test_dummy_schema_includes_accessible_depends_on_recording_id
@@ -118,6 +112,16 @@ class GemTemplateTest < Minitest::Test
     assert rule_migration, "expected access rules migration in dummy db/migrate"
     assert_includes File.read(constraint_migration), "create_table :recording_studio_access_constraints"
     assert_includes File.read(rule_migration), "create_table :recording_studio_access_rules"
+
+    events_table = schema[/create_table "recording_studio_events".*?^  end/m]
+    assert_includes events_table, 't.uuid "root_recording_id", null: false'
+    events_migration = Dir.glob(
+      File.expand_path("dummy/db/migrate/*_add_root_recording_id_to_recording_studio_events.rb", __dir__)
+    ).max
+    assert events_migration, "expected events root_recording_id migration in dummy db/migrate"
+    assert_includes File.read(events_migration), "add_column :recording_studio_events, :root_recording_id"
+    assert_includes schema, 'create_table "recording_studio_access_requests"'
+    assert_includes schema, 't.boolean "trash_root"'
   end
 
   def test_template_does_not_ship_copied_core_hooks_or_base_service
@@ -142,9 +146,9 @@ class GemTemplateTest < Minitest::Test
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
 
-    assert_includes controller_source, "include RecordingStudio::UsesDefaultLayout"
-    assert_includes controller_source, '"recording_studio/default_layout"'
-    assert_includes controller_source, "devise_controller? ? \"application\""
+    assert_includes controller_source, "recording_studio_layout { devise_controller? ? \"application\" : nil }"
+    refute_includes controller_source, "UsesDefaultLayout"
+    refute_includes controller_source, "action_layout"
     refute_includes controller_source, "flat_pack_sidebar"
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
@@ -210,32 +214,22 @@ class GemTemplateTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v4.7.1`"
-    refute_includes readme, "dummy GitHub tag `v4.7.0`"
-    refute_includes readme, "dummy GitHub tag `v4.6.0`"
-    refute_includes readme, "dummy GitHub tag `v4.5.0`"
-    assert_includes readme, "dummy GitHub tag `v0.1.331`"
-    refute_includes readme, "dummy GitHub tag `v0.1.196`"
-    assert_includes readme, "dummy GitHub tag `v0.18.0`"
-    assert_includes readme, "dummy GitHub tag `v0.11.0`"
-    assert_includes readme, "dummy GitHub tag `v0.10.0`"
-    refute_includes readme, "dummy GitHub tag `v0.9.0`"
-    assert_includes readme, "dummy GitHub tag `v0.3.1`"
-    refute_includes readme, "dummy GitHub tag `v0.2.0`"
-    refute_includes readme, "dummy GitHub tag `v0.17.0`"
-    refute_includes readme, "dummy GitHub tag `v0.15.0`"
-    refute_includes readme, "dummy GitHub tag `v0.10.1`"
-    refute_includes readme, "dummy GitHub tag `v0.8.0`"
-    refute_includes readme, "dummy GitHub tag `v0.6.0`"
-    refute_includes readme, "dummy GitHub tag `v0.5.1`"
-    refute_includes readme, "dummy GitHub tag `v4.4.0`"
-    refute_includes readme, "dummy GitHub tag `v4.3.0`"
-    refute_includes readme, "dummy GitHub tag `v4.2.2`"
-    refute_includes readme, "dummy GitHub tag `v4.2.1`"
-    refute_includes readme, "dummy GitHub tag `v4.2.0`"
-    refute_includes readme, "v0.1.177"
-    refute_includes readme, "v0.9.1"
-    refute_includes readme, "v0.1.133"
+    assert_includes readme, "dummy GitHub tag `v7.0.0`"
+    refute_includes readme, "dummy GitHub tag `v4.7.1`"
+    refute_includes readme, "UsesDefaultLayout"
+    assert_includes readme, "dummy GitHub tag `v0.1.376`"
+    refute_includes readme, "dummy GitHub tag `v0.1.331`"
+    assert_includes readme, "dummy GitHub tag `v0.44.1`"
+    refute_includes readme, "dummy GitHub tag `v0.18.0`"
+    assert_includes readme, "dummy GitHub tag `v0.17.0`"
+    refute_includes readme, "dummy GitHub tag `v0.11.0`"
+    assert_includes readme, "dummy GitHub tag `v0.16.0`"
+    refute_includes readme, "dummy GitHub tag `v0.10.0`"
+    assert_includes readme, "dummy GitHub tag `v0.9.0`"
+    refute_includes readme, "dummy GitHub tag `v0.3.1`"
+    assert_includes readme, "dummy GitHub tag `v0.7.0`"
+    refute_includes readme, "dummy GitHub tag `v0.5.0`"
+    assert_includes readme, "create_root_recording!"
     refute_includes readme, "v3 declarations"
     refute_includes readme, "RecordingStudio v3"
     refute_includes readme, "ExampleService"
@@ -266,15 +260,15 @@ class GemTemplateTest < Minitest::Test
     refute File.exist?(copied_root_switch)
   end
 
-  def test_dummy_root_switch_dropdown_renders_rows_on_flatpack
+  def test_dummy_root_switch_dropdown_uses_the_public_helper
     helper = File.read(File.expand_path("dummy/app/helpers/application_helper.rb", __dir__))
 
-    assert_includes helper, "recording_studio_root_switch_list_for"
-    assert_includes helper, "FlatPack::Button::Dropdown::Component"
-    assert_includes helper, "RowsComponent.new(menu_rows: list.menu_rows)"
-    assert_includes helper, "temporary shim"
-    refute_includes helper, "recording_studio_root_switch_menu_rows"
-    refute_includes helper, "menu_html(render(list))"
+    assert_includes helper, "recording_studio_root_switch_dropdown"
+    assert_includes helper, "flat_pack_page_nav"
+    assert_includes helper, "recording_studio_page_nav_right"
+    refute_includes helper, "RowsComponent"
+    refute_includes helper, "temporary shim"
+    refute_includes helper, "recording_studio_page_nav("
     refute_includes helper, "class_eval"
     refute_includes helper, "prepend"
   end
@@ -301,7 +295,7 @@ class GemTemplateTest < Minitest::Test
       view_source = File.read(view_path)
 
       assert_includes view_source, "dummy_page_nav"
-      assert_includes view_source, "FlatPack::PageTitle::Component"
+      refute_includes view_source, "FlatPack::PageTitle::Component"
       refute_includes view_source, "FlatPack::Card::Component"
       refute_includes view_source, "FlatPack::Breadcrumb::Component"
     end

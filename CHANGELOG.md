@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-15
+
+New addons copied from this template start on Recording Studio 7.
+
+### Changed
+- Gemspec `recording_studio` dependency `~> 4.2` → `>= 7.0, < 8.0`.
+- Root and dummy Recording Studio `v4.7.1` → `v7.0.0`. The root Gemfile also pins FlatPack `v0.1.376`, because core 7 depends on FlatPack and FlatPack is not on RubyGems.
+- Dummy pins: Accessible `v0.18.0` → `v0.44.1`, Trashable `v0.11.0` → `v0.17.0`, Root Switchable `v0.10.0` → `v0.16.0`, Metrics `v0.3.1` → `v0.9.0`, Cache `v0.5.0` → `v0.7.0`, FlatPack `v0.1.331` → `v0.1.376`.
+- Dummy controllers opt in with `recording_studio_layout`. `RecordingStudio::UsesDefaultLayout`, `recording_studio/action_layout`, and `recording_studio_page_nav` are removed in core. The default layout is FlatPack's page layout and top nav.
+- Seeds create roots with `RecordingStudio.create_root_recording!(recordable, actor:)`. `root_recording_for` only finds a root and returns `nil` when it is missing. Kept child lookups use `RecordingStudio::Recording.kept`.
+- The dummy sets `config.authorize_write` and Accessible `access_management_actor_scope`. It does not set `allow_unauthorized_writes`.
+- Seeds grant the demo user Accessible owner on each workspace root. Root Switchable 0.16 forbids the switcher page without `:view` on the current root.
+- The dummy schema includes `recording_studio_events.root_recording_id` from the core migration generator, plus the Accessible migrations that generator adds.
+- The temporary root-switch shim is gone. The nav calls `recording_studio_root_switch_dropdown`.
+
+### Upgrade notes
+- Point addon gemspecs at `recording_studio`, `>= 7.0`, `< 8.0`.
+- Pin the host Gemfile to Recording Studio `v7.0.0` and FlatPack `v0.1.376`.
+- Replace `include RecordingStudio::UsesDefaultLayout` with `recording_studio_layout`.
+- Replace `recording_studio_page_nav` with `content_for :title` and `flat_pack_page_nav`. `recording_studio_page_nav_right` stays.
+- Create roots with `RecordingStudio.create_root_recording!(recordable, actor:)`. Keep `root_recording_for` for lookup and handle `nil`.
+- Set `config.authorize_write` so a present actor may write. Do not set `allow_unauthorized_writes`.
+- Set `config.access_management_actor_scope` when Accessible is bundled.
+- Run `bin/rails generate recording_studio:migrations` and `bin/rails generate recording_studio_accessible:migrations`, then `bin/rails db:migrate`. Do not hand-edit those tables. `events_query` no longer takes `offset:`. Pass `cursor:`.
+- Run `bin/rails generate flat_pack:install`, then rebuild Tailwind.
+- Delete a nav shim that renders `RowsComponent` on `FlatPack::Button::Dropdown`. Call `recording_studio_root_switch_dropdown`.
+- Use `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService` from core. Do not copy them.
+
 ## [0.2.13] - 2026-11-15
 
 ### Changed
