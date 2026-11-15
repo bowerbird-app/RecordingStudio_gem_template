@@ -10,9 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `bin/rename_gem` deletes `docs/gem_template`. Those notes stay in this repository and do not ship in a renamed addon.
 - Template hook and service notes point at core `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService`.
+- Lockfiles: `puma` `8.0.2` → `8.0.3` (root and dummy). Dummy `msgpack` `1.8.5` → `1.8.7`.
+
+### Security
+- Dummy Bundler Audit was failing on advisories published 2026-11-15. `msgpack` `1.8.5` is `CVE-2026-126366` / `GHSA-73v3-wf97-vpgj` (fixed in `>= 1.8.7`). `puma` `8.0.2` is `GHSA-86xc-wrr9-xmmq`, `GHSA-jm4r-w4xx-qxw7`, `GHSA-m5xw-3hrw-qcmf`, `GHSA-r885-m39c-939g`, `GHSA-rf6g-xhmp-gm7v`, `GHSA-x646-wp7c-h9mg`, and `GHSA-xw3h-pgr9-3vg7` (fixed in `>= 8.0.3`).
 
 ### Upgrade notes
 - If a copied addon still has `docs/gem_template`, delete that directory. This change does not bump the gem version.
+- Refresh lockfiles so `puma` is `8.0.3` and dummy `msgpack` is `1.8.7`. `bundle lock --update=puma --patch` at the root, and the same command with `msgpack` in `test/dummy`, is enough.
 
 ## [0.2.12] - 2026-11-06
 
