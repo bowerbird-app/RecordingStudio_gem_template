@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** December 11, 2025
+> *   **Last Updated:** November 15, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -14,36 +14,20 @@ Business logic in GemTemplate is encapsulated in service objects using the Resul
 
 ## Usage
 
-```ruby
-result = GemTemplate::Services::ExampleService.call(name: "World")
-
-if result.success?
-  puts result.value  # => "Hello, World!"
-else
-  puts result.error
-end
-```
-
-## Creating Services
-
-Create your own services by inheriting from `BaseService`:
+Subclass core `RecordingStudio::Services::BaseService`. Do not copy `BaseService` into the addon, and do not add `GemTemplate::Services::ExampleService`.
 
 ```ruby
-module GemTemplate
-  module Services
-    class MyService < BaseService
-      def initialize(param:)
-        @param = param
-      end
+class MyService < RecordingStudio::Services::BaseService
+  def initialize(param:)
+    @param = param
+  end
 
-      private
+  private
 
-      def perform
-        # Your logic here
-        success(result_value)
-        # or: failure("Error message")
-      end
-    end
+  def perform
+    success(@param)
   end
 end
+
+result = MyService.call(param: "World")
 ```

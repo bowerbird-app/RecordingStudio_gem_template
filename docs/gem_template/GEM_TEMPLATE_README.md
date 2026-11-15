@@ -1,12 +1,12 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** September 1, 2026
+> *   **Last Updated:** November 15, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
 ---
 
-> **📌 Note:** This documentation directory (`docs/gem_template/`) is preserved during gem renaming and serves as architectural reference material. When you rename your gem, these files intentionally remain under `gem_template` to document the original template structure.
+> **Note:** `bin/rename_gem` deletes `docs/gem_template/`. These notes stay in the template repository and do not ship in a renamed addon.
 
 ---
 
@@ -95,10 +95,7 @@ gem_template/
 │   ├── gem_template/
 │   │   ├── configuration.rb
 │   │   ├── engine.rb
-│   │   ├── version.rb
-│   │   └── services/        # Service objects
-│   │       ├── base_service.rb
-│   │       └── example_service.rb
+│   │   └── version.rb
 │   └── generators/
 ├── .cursor/                 # Repo-managed Cloud Agent env (name + install, no snapshot)
 ├── test/dummy/              # Test Rails app

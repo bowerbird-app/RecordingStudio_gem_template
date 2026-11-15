@@ -27,6 +27,10 @@ class GemRenamer
   
   # Directories to completely exclude from processing
   EXCLUDED_DIRS = %w[.git node_modules vendor tmp log].freeze
+
+  # Template-repository notes. Rename deletes this directory.
+  # Keep it out of content rewrite and file moves so that delete does not race a path rename.
+  TEMPLATE_DOCS_DIR = "docs/gem_template"
   
   # Files to exclude from content replacement (but still rename if needed)
   EXCLUDED_FILES = %w[rename_verification_test.rb].freeze
@@ -58,6 +62,7 @@ class GemRenamer
     @old_name = from ? normalize_name(from) : detect_current_name
     @dry_run = dry_run
     @changes_made = { directories: [], files: [], content: [] }
+    @removed_template_docs = false
   end
 
   def run
@@ -184,6 +189,11 @@ class GemRenamer
     puts "  #{@old_name.ljust(30)} → #{@new_name}"
     puts "  #{old_pascal.ljust(30)} → #{new_pascal}"
 
+    if Dir.exist?(template_docs_path)
+      puts "\n#{colorize("Template docs to remove:", :bold)}"
+      puts "  #{TEMPLATE_DOCS_DIR}"
+    end
+
     puts "\n#{colorize("Directories to rename:", :bold)}"
     directories_to_rename.each do |old_path, new_path|
       puts "  #{relative(old_path).ljust(38)} → #{relative(new_path)}"
@@ -227,6 +237,7 @@ class GemRenamer
       all_files = Dir.glob(File.join(@root, "**", "*#{@old_name}*"))
       all_files.reject! { |f| File.directory?(f) }
       all_files.reject! { |f| EXCLUDED_DIRS.any? { |dir| f.include?("/#{dir}/") } }
+      all_files.reject! { |f| template_docs_path?(f) }
 
       # Add discovered files
       all_files.each do |old_path|
@@ -252,8 +263,8 @@ class GemRenamer
         EXCLUDED_DIRS.any? { |dir| f.include?("/#{dir}/") }
       end
       
-      # Exclude gem_template documentation directory (preserve as architectural reference)
-      files.reject! { |f| f.include?("/docs/gem_template/") }
+      # Template docs are deleted, not rewritten.
+      files.reject! { |f| template_docs_path?(f) }
       
       # For test/dummy, only include specific whitelisted files
       files.reject! do |f|
@@ -335,7 +346,8 @@ class GemRenamer
     end
 
     puts colorize("\nRenaming...\n", :cyan)
-    
+    remove_template_docs!
+
     # Phase 1: Update file contents
     if !state || state[:phase] == 'not_started'
       update_all_file_contents
@@ -423,9 +435,6 @@ class GemRenamer
 
     # Exclude files in excluded directories (but NOT test/dummy, handled below)
     files.reject! { |f| EXCLUDED_DIRS.any? { |dir| f.include?("/#{dir}/") } }
-
-    # Exclude gem_template documentation directory (preserve as architectural reference)
-    files.reject! { |f| f.include?("/docs/gem_template/") }
 
     # Exclude files that are intentionally preserved (like verification tests)
     files.reject! { |f| EXCLUDED_FILES.any? { |excluded| f.end_with?(excluded) } }
@@ -591,12 +600,29 @@ class GemRenamer
     puts "  Directories renamed: #{@changes_made[:directories].size}"
     puts "  Files renamed:       #{@changes_made[:files].size}"
     puts "  Files updated:       #{@changes_made[:content].size}"
+    puts "  Template docs removed: #{TEMPLATE_DOCS_DIR}" if @removed_template_docs
 
     puts "\n#{colorize("Next steps:", :bold)}"
     puts "  1. Review the changes: git diff"
     puts "  2. Run tests: bundle exec rake test"
     puts "  3. Commit: git add -A && git commit -m 'Rename gem to #{@new_name}'"
     puts ""
+  end
+
+  def template_docs_path
+    File.join(@root, TEMPLATE_DOCS_DIR)
+  end
+
+  def template_docs_path?(path)
+    path.include?("/#{TEMPLATE_DOCS_DIR}/") || path.end_with?("/#{TEMPLATE_DOCS_DIR}")
+  end
+
+  def remove_template_docs!
+    return unless File.exist?(template_docs_path)
+
+    FileUtils.rm_rf(template_docs_path)
+    @removed_template_docs = true
+    puts "  ✓ Removed #{TEMPLATE_DOCS_DIR}"
   end
 
   def relative(path)

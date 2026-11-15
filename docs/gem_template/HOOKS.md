@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** December 11, 2025
+> *   **Last Updated:** November 15, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -8,7 +8,7 @@
 
 # Engine Hooks
 
-GemTemplate provides a powerful hook system that allows host applications to customize engine behavior without modifying the engine's source code.
+Host apps register on `GemTemplate.configuration.hooks`. That object is a core `RecordingStudio::Hooks` instance. Use `RecordingStudio::Hooks`. The addon does not define `GemTemplate::Hooks` or a second registry. The engine runs the registered hooks with `GemTemplate.configuration.hooks.run`.
 
 ---
 
@@ -240,7 +240,7 @@ class HooksTest < ActiveSupport::TestCase
   end
   
   test "after_initialize hook is called" do
-    GemTemplate::Hooks.run(:after_initialize)
+    GemTemplate.configuration.hooks.run(:after_initialize)
     assert @called
   end
 end
