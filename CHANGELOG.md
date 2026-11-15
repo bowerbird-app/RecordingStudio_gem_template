@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `bin/rename_gem` deletes `docs/gem_template`. Those notes stay in this repository and do not ship in a renamed addon.
+- Template hook and service notes point at core `RecordingStudio::Hooks` and `RecordingStudio::Services::BaseService`.
+
+### Upgrade notes
+- If a copied addon still has `docs/gem_template`, delete that directory. This change does not bump the gem version.
+
 ## [0.2.12] - 2026-11-06
 
 ### Changed

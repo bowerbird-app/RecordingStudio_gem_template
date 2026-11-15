@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** October 5, 2026
+> *   **Last Updated:** November 15, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -68,20 +68,11 @@ Files updated include:
 
 Dummy credentials (`test/dummy/config/credentials.yml.enc`) stay as the shared Recording Studio dummy file. After rename, set `RAILS_MASTER_KEY` (or `test/dummy/config/master.key`) to the shared development key. Do not mint a new master key.
 
-## What Does NOT Get Renamed
+## What gets removed
 
-The following directories and files are intentionally **excluded** from renaming:
+`bin/rename_gem` deletes `docs/gem_template/`.
 
-### Excluded Documentation
-- `docs/gem_template/` - **Preserved as architectural reference**
-  - These files document the original gem_template structure
-  - They serve as reference documentation for understanding the template's architecture
-  - Keep them unchanged even after renaming your gem
-
-This ensures you maintain documentation showing:
-- How the template was originally structured
-- What patterns and conventions come from the gem_template
-- Reference material for future gems built from this template
+Those notes explain this template repository. A renamed addon does not keep them. `--dry-run` lists the directory and leaves it in place. Content rewrite and file moves skip the directory, because the script deletes it before validation. If the directory is still there at validation, the rename stops.
 
 ## Verification
 
