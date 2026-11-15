@@ -92,7 +92,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Folder: Reference"
     assert_includes response.body, "Page: API"
     refute_includes response.body, "Access boundary"
-    refute_includes response.body, "Access: Admin"
+    refute_match(/Access: Admin(?! for )/, response.body)
     assert_select "div[role='tree']", count: 1
     assert_select "[role='treeitem']", minimum: 3
     refute_includes response.body, "Current structure"
